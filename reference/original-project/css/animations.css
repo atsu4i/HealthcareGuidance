@@ -1,0 +1,354 @@
+/* ===================================================
+   アニメーション専用スタイルシート (css/animations.css)
+   ================================================== */
+
+/* パフォーマンス最適化のためのアニメーション設定 */
+@media (prefers-reduced-motion: reduce) {
+    * {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}
+
+/* ページ読み込みアニメーション */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes fadeInDown {
+    from {
+        opacity: 0;
+        transform: translateY(-30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes fadeInLeft {
+    from {
+        opacity: 0;
+        transform: translateX(-30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+@keyframes fadeInRight {
+    from {
+        opacity: 0;
+        transform: translateX(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+/* スケールアニメーション */
+@keyframes scaleIn {
+    from {
+        opacity: 0;
+        transform: scale(0.9);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+@keyframes scaleOut {
+    from {
+        opacity: 1;
+        transform: scale(1);
+    }
+    to {
+        opacity: 0;
+        transform: scale(0.9);
+    }
+}
+
+/* ボタンホバーアニメーション */
+@keyframes buttonPulse {
+    0% {
+        box-shadow: 0 0 0 0 rgba(78, 205, 196, 0.7);
+    }
+    70% {
+        box-shadow: 0 0 0 10px rgba(78, 205, 196, 0);
+    }
+    100% {
+        box-shadow: 0 0 0 0 rgba(78, 205, 196, 0);
+    }
+}
+
+/* カード表示アニメーション */
+@keyframes slideInFromBottom {
+    from {
+        opacity: 0;
+        transform: translateY(50px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* 選択エフェクト */
+@keyframes selectGlow {
+    0% {
+        box-shadow: 0 0 5px rgba(78, 205, 196, 0.5);
+    }
+    50% {
+        box-shadow: 0 0 20px rgba(78, 205, 196, 0.8);
+    }
+    100% {
+        box-shadow: 0 0 5px rgba(78, 205, 196, 0.5);
+    }
+}
+
+/* 通知アニメーション */
+@keyframes notificationSlide {
+    0% {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    15% {
+        transform: translateX(0);
+        opacity: 1;
+    }
+    85% {
+        transform: translateX(0);
+        opacity: 1;
+    }
+    100% {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+}
+
+/* 読み込みスピナー */
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* 波紋エフェクト */
+@keyframes ripple {
+    0% {
+        transform: scale(0);
+        opacity: 1;
+    }
+    100% {
+        transform: scale(4);
+        opacity: 0;
+    }
+}
+
+/* シェイクアニメーション（エラー時） */
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    10%, 30%, 50%, 70%, 90% { transform: translateX(-10px); }
+    20%, 40%, 60%, 80% { transform: translateX(10px); }
+}
+
+/* フローティングアニメーション */
+@keyframes float {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-10px); }
+}
+
+/* グラデーション移動アニメーション */
+@keyframes gradientMove {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+
+/* タイプライター効果 */
+@keyframes typewriter {
+    from { width: 0; }
+    to { width: 100%; }
+}
+
+/* アニメーションクラス */
+.animate-fade-in-up {
+    animation: fadeInUp 0.6s ease-out;
+}
+
+.animate-fade-in-down {
+    animation: fadeInDown 0.6s ease-out;
+}
+
+.animate-fade-in-left {
+    animation: fadeInLeft 0.6s ease-out;
+}
+
+.animate-fade-in-right {
+    animation: fadeInRight 0.6s ease-out;
+}
+
+.animate-scale-in {
+    animation: scaleIn 0.3s ease-out;
+}
+
+.animate-scale-out {
+    animation: scaleOut 0.3s ease-in;
+}
+
+.animate-slide-in {
+    animation: slideInFromBottom 0.5s ease-out;
+}
+
+.animate-float {
+    animation: float 3s ease-in-out infinite;
+}
+
+.animate-pulse {
+    animation: buttonPulse 2s infinite;
+}
+
+.animate-glow {
+    animation: selectGlow 2s ease-in-out infinite;
+}
+
+.animate-shake {
+    animation: shake 0.5s ease-in-out;
+}
+
+.animate-gradient {
+    animation: gradientMove 3s ease infinite;
+}
+
+/* 段階的表示用遅延クラス */
+.delay-100 { animation-delay: 0.1s; }
+.delay-200 { animation-delay: 0.2s; }
+.delay-300 { animation-delay: 0.3s; }
+.delay-400 { animation-delay: 0.4s; }
+.delay-500 { animation-delay: 0.5s; }
+
+/* 通知バナー */
+.notification {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background: linear-gradient(45deg, #4ecdc4, #44a08d);
+    color: white;
+    padding: 15px 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    z-index: 9999;
+    animation: notificationSlide 4s ease-in-out;
+}
+
+/* ローディングスピナー */
+.loading-spinner {
+    width: 20px;
+    height: 20px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-top: 2px solid #4ecdc4;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    display: inline-block;
+    margin-right: 10px;
+}
+
+/* ホバー時の特殊効果 */
+.hover-lift {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.hover-lift:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+}
+
+.hover-glow:hover {
+    box-shadow: 0 0 20px rgba(78, 205, 196, 0.6);
+}
+
+/* パーティクル効果（背景装飾） */
+.particles {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: -1;
+}
+
+.particle {
+    position: absolute;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 50%;
+    animation: float 6s ease-in-out infinite;
+}
+
+.particle:nth-child(1) { left: 10%; animation-delay: 0s; }
+.particle:nth-child(2) { left: 20%; animation-delay: 1s; }
+.particle:nth-child(3) { left: 30%; animation-delay: 2s; }
+.particle:nth-child(4) { left: 40%; animation-delay: 3s; }
+.particle:nth-child(5) { left: 50%; animation-delay: 4s; }
+.particle:nth-child(6) { left: 60%; animation-delay: 5s; }
+.particle:nth-child(7) { left: 70%; animation-delay: 6s; }
+.particle:nth-child(8) { left: 80%; animation-delay: 7s; }
+.particle:nth-child(9) { left: 90%; animation-delay: 8s; }
+
+/* レスポンシブアニメーション */
+@media (max-width: 768px) {
+    .animate-fade-in-up,
+    .animate-fade-in-down,
+    .animate-fade-in-left,
+    .animate-fade-in-right {
+        animation-duration: 0.4s;
+    }
+    
+    .hover-lift:hover {
+        transform: translateY(-2px);
+    }
+}
+
+/* アクセシビリティ: アニメーション無効時 */
+@media (prefers-reduced-motion: reduce) {
+    .animate-fade-in-up,
+    .animate-fade-in-down,
+    .animate-fade-in-left,
+    .animate-fade-in-right,
+    .animate-scale-in,
+    .animate-scale-out,
+    .animate-slide-in,
+    .animate-float,
+    .animate-pulse,
+    .animate-glow,
+    .animate-shake,
+    .animate-gradient {
+        animation: none;
+    }
+    
+    .hover-lift {
+        transition: none;
+    }
+}
+
+/* スムーズスクロール */
+html {
+    scroll-behavior: smooth;
+}
+
+/* フォーカス時のアニメーション */
+.form-group input:focus,
+.form-group textarea:focus,
+.form-group select:focus {
+    animation: scaleIn 0.2s ease-out;
+}

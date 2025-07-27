@@ -1,0 +1,481 @@
+/* ===================================================
+   レスポンシブ専用スタイルシート (css/responsive.css)
+   ================================================== */
+
+/* デスクトップファースト設計 */
+
+/* Large Desktop (1200px以上) */
+@media (min-width: 1200px) {
+    .container {
+        max-width: 1400px;
+    }
+    
+    .header h1 {
+        font-size: 3rem;
+    }
+    
+    .grid {
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 30px;
+    }
+    
+    .chat-messages {
+        height: 500px;
+    }
+}
+
+/* Desktop (992px-1199px) */
+@media (max-width: 1199px) and (min-width: 992px) {
+    .container {
+        max-width: 1100px;
+    }
+    
+    .grid {
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 25px;
+    }
+}
+
+/* Tablet (768px-991px) */
+@media (max-width: 991px) and (min-width: 768px) {
+    .container {
+        max-width: 900px;
+        padding: 15px;
+    }
+    
+    .header h1 {
+        font-size: 2.2rem;
+    }
+    
+    .grid {
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 20px;
+    }
+    
+    .card {
+        padding: 25px;
+    }
+    
+    .controls {
+        flex-direction: row;
+        flex-wrap: wrap;
+    }
+    
+    .btn {
+        min-width: 120px;
+    }
+    
+    .chat-messages {
+        height: 350px;
+    }
+    
+    .form-group input,
+    .form-group textarea,
+    .form-group select {
+        font-size: 16px; /* iOS のズーム防止 */
+    }
+}
+
+/* Mobile Large (576px-767px) */
+@media (max-width: 767px) and (min-width: 576px) {
+    .container {
+        padding: 10px;
+    }
+    
+    .header h1 {
+        font-size: 2rem;
+    }
+    
+    .grid {
+        grid-template-columns: 1fr;
+        gap: 15px;
+    }
+    
+    .card {
+        padding: 20px;
+        margin-bottom: 20px;
+    }
+    
+    .controls {
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    .btn {
+        width: 100%;
+        padding: 15px 20px;
+    }
+    
+    .chat-messages {
+        height: 300px;
+        padding: 15px;
+    }
+    
+    .message.user .message-content {
+        margin-left: 10px;
+    }
+    
+    .message.assistant .message-content {
+        margin-right: 10px;
+    }
+    
+    .input-container {
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    .input-container input {
+        margin-bottom: 0;
+    }
+    
+    .voice-btn {
+        width: 100%;
+        height: 50px;
+        border-radius: 25px;
+    }
+    
+    .history-actions {
+        flex-direction: column;
+        gap: 8px;
+    }
+    
+    .history-actions .btn {
+        font-size: 0.8rem;
+        padding: 10px 15px;
+    }
+}
+
+/* Mobile Small (320px-575px) */
+@media (max-width: 575px) {
+    .container {
+        padding: 8px;
+    }
+    
+    .header {
+        margin-bottom: 20px;
+    }
+    
+    .header h1 {
+        font-size: 1.8rem;
+        line-height: 1.2;
+    }
+    
+    .status-bar {
+        font-size: 0.8rem;
+        flex-direction: column;
+        gap: 5px;
+    }
+    
+    .card {
+        padding: 15px;
+        margin-bottom: 15px;
+        border-radius: 15px;
+    }
+    
+    .section-title {
+        font-size: 1.5rem;
+        margin-bottom: 15px;
+    }
+    
+    .selection-card {
+        padding: 15px;
+    }
+    
+    .card-title {
+        font-size: 1.1rem;
+    }
+    
+    .card-description {
+        font-size: 0.9rem;
+    }
+    
+    .btn {
+        padding: 12px 16px;
+        font-size: 0.9rem;
+    }
+    
+    .chat-messages {
+        height: 250px;
+        padding: 10px;
+    }
+    
+    .message {
+        margin-bottom: 15px;
+    }
+    
+    .message-content {
+        padding: 12px;
+        font-size: 0.9rem;
+    }
+    
+    .message.user .message-content {
+        margin-left: 5px;
+    }
+    
+    .message.assistant .message-content {
+        margin-right: 5px;
+    }
+    
+    .input-container input {
+        padding: 12px;
+        font-size: 16px; /* iOS のズーム防止 */
+    }
+    
+    .form-group input,
+    .form-group textarea,
+    .form-group select {
+        padding: 10px;
+        font-size: 16px; /* iOS のズーム防止 */
+    }
+    
+    .form-group textarea {
+        min-height: 80px;
+    }
+    
+    .item-card {
+        padding: 15px;
+    }
+    
+    .item-card h3 {
+        font-size: 1.1rem;
+    }
+    
+    .item-card p {
+        font-size: 0.9rem;
+    }
+    
+    .item-actions {
+        flex-direction: column;
+        gap: 8px;
+    }
+    
+    .history-item {
+        padding: 15px;
+    }
+    
+    .history-title {
+        font-size: 1rem;
+    }
+    
+    .history-info,
+    .history-preview {
+        font-size: 0.8rem;
+    }
+    
+    .voice-indicator {
+        padding: 15px;
+        font-size: 1rem;
+    }
+    
+    .typing-indicator {
+        padding: 12px;
+        font-size: 0.9rem;
+    }
+}
+
+/* 超小型デバイス (320px未満) */
+@media (max-width: 319px) {
+    .container {
+        padding: 5px;
+    }
+    
+    .header h1 {
+        font-size: 1.6rem;
+    }
+    
+    .card {
+        padding: 12px;
+    }
+    
+    .section-title {
+        font-size: 1.3rem;
+    }
+    
+    .btn {
+        padding: 10px 12px;
+        font-size: 0.8rem;
+    }
+    
+    .chat-messages {
+        height: 200px;
+        padding: 8px;
+    }
+    
+    .message-content {
+        padding: 10px;
+        font-size: 0.8rem;
+    }
+}
+
+/* 横向き (ランドスケープ) 対応 */
+@media (orientation: landscape) and (max-height: 600px) {
+    .header {
+        margin-bottom: 15px;
+    }
+    
+    .header h1 {
+        font-size: 1.8rem;
+        margin-bottom: 5px;
+    }
+    
+    .card {
+        padding: 15px;
+        margin-bottom: 15px;
+    }
+    
+    .chat-messages {
+        height: 200px;
+    }
+    
+    .voice-indicator {
+        padding: 10px;
+        font-size: 0.9rem;
+    }
+}
+
+/* 高解像度ディスプレイ対応 */
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+    .status-indicator {
+        width: 10px;
+        height: 10px;
+    }
+    
+    .typing-dot {
+        width: 6px;
+        height: 6px;
+    }
+}
+
+/* ダークモード対応 */
+@media (prefers-color-scheme: dark) {
+    .card {
+        background: rgba(255, 255, 255, 0.08);
+        border: 1px solid rgba(255, 255, 255, 0.15);
+    }
+    
+    .selection-card {
+        background: rgba(255, 255, 255, 0.12);
+    }
+    
+    .form-group input,
+    .form-group textarea,
+    .form-group select {
+        background: rgba(255, 255, 255, 0.08);
+        border: 2px solid rgba(255, 255, 255, 0.15);
+    }
+}
+
+/* 高コントラストモード対応 */
+@media (prefers-contrast: high) {
+    .card {
+        border: 2px solid rgba(255, 255, 255, 0.4);
+    }
+    
+    .selection-card.selected {
+        border-width: 3px;
+        border-color: #4ecdc4;
+    }
+    
+    .btn {
+        border: 2px solid rgba(255, 255, 255, 0.3);
+    }
+    
+    .form-group input:focus,
+    .form-group textarea:focus,
+    .form-group select:focus {
+        border-width: 3px;
+    }
+}
+
+/* プリンター対応 */
+@media print {
+    * {
+        background: white !important;
+        color: black !important;
+        box-shadow: none !important;
+    }
+    
+    .btn,
+    .controls,
+    .voice-btn,
+    .file-label {
+        display: none !important;
+    }
+    
+    .card {
+        border: 1px solid #ccc;
+        background: white;
+        page-break-inside: avoid;
+    }
+    
+    .chat-messages {
+        height: auto;
+        overflow: visible;
+    }
+}
+
+/* 省電力モード対応 */
+@media (prefers-reduced-motion: reduce) {
+    .hover-lift:hover {
+        transform: none;
+    }
+    
+    .selection-card:hover {
+        transform: none;
+    }
+    
+    .card:hover {
+        transform: none;
+    }
+}
+
+/* タッチデバイス用スタイル */
+@media (hover: none) and (pointer: coarse) {
+    .btn {
+        min-height: 44px; /* タッチターゲットサイズ */
+        min-width: 44px;
+    }
+    
+    .selection-card {
+        min-height: 60px;
+    }
+    
+    .voice-btn {
+        min-height: 50px;
+        min-width: 50px;
+    }
+    
+    /* ホバー効果を無効化 */
+    .hover-lift:hover,
+    .selection-card:hover,
+    .card:hover,
+    .btn:hover {
+        transform: none;
+        box-shadow: none;
+    }
+    
+    /* タップ時のフィードバック */
+    .btn:active,
+    .selection-card:active {
+        transform: scale(0.98);
+        transition: transform 0.1s ease;
+    }
+}
+
+/* 大きなフォントサイズ設定時の対応 */
+@media (min-width: 768px) and (min-height: 600px) {
+    .large-text {
+        font-size: 1.2em;
+    }
+    
+    .large-text .btn {
+        padding: 15px 30px;
+        font-size: 1.1rem;
+    }
+    
+    .large-text .form-group input,
+    .large-text .form-group textarea {
+        padding: 15px;
+        font-size: 1.1rem;
+    }
+}
