@@ -1,16 +1,16 @@
-// 📱 Personal AI Assistant - Root Layout
+// 📱 AI Mock Interview - Root Layout
 
 import { Metadata, Viewport } from 'next'
 import './globals.css'
 
 export const metadata: Metadata = {
-  title: 'Personal AI Assistant',
-  description: 'Gemini-powered personal assistant for iPhone',
+  title: 'AI Mock Interview',
+  description: 'AI-powered mock interview practice app',
   manifest: '/manifest.json',
   appleWebApp: {
     capable: true,
     statusBarStyle: 'default',
-    title: 'AI助手',
+    title: '模擬面接',
   },
   formatDetection: {
     telephone: false,
@@ -48,7 +48,7 @@ export default function RootLayout({
       <head>
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-        <meta name="apple-mobile-web-app-title" content="AI助手" />
+        <meta name="apple-mobile-web-app-title" content="模擬面接" />
         <meta name="format-detection" content="telephone=no" />
         <meta name="mobile-web-app-capable" content="yes" />
         <meta name="msapplication-config" content="/browserconfig.xml" />

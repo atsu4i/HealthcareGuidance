@@ -4,18 +4,39 @@
 
 import { useEffect, useRef, useState } from 'react'
 import { useChat } from '@/hooks/useChat'
-import { useSettings } from '@/hooks/useSettings'
+import { AppSettings, Resume } from '@/types'
 import MessageBubble from './MessageBubble'
 import InputArea from './InputArea'
 import SettingsModal from './SettingsModal'
 import ChatHistoryModal from './ChatHistoryModal'
+import ResumeModal from './ResumeModal'
 import { isPWA, getDeviceInfo } from '@/lib/utils'
 
-export default function ChatInterface() {
-  const { settings, updateSettings, isValidApiKey, isLoaded } = useSettings()
-  const chat = useChat(settings.geminiConfig)
+interface ChatInterfaceProps {
+  settings: AppSettings
+  updateSettings: (updates: Partial<AppSettings>) => void
+  isValidApiKey: boolean
+  isLoaded: boolean
+  onBackToHome: () => void
+  currentResume: Resume | null
+  forceNewSession: boolean
+  onNewSessionCreated: () => void
+}
+
+export default function ChatInterface({
+  settings,
+  updateSettings,
+  isValidApiKey,
+  isLoaded,
+  onBackToHome,
+  currentResume,
+  forceNewSession,
+  onNewSessionCreated
+}: ChatInterfaceProps) {
+  const chat = useChat(settings)
   const [isSettingsOpen, setIsSettingsOpen] = useState(false)
   const [isHistoryOpen, setIsHistoryOpen] = useState(false)
+  const [isResumeOpen, setIsResumeOpen] = useState(false)
   const messagesEndRef = useRef<HTMLDivElement>(null)
 
   // Auto-scroll to bottom when new messages arrive
@@ -29,6 +50,14 @@ export default function ChatInterface() {
       document.documentElement.classList.toggle('dark', settings.darkMode)
     }
   }, [settings.darkMode, isLoaded])
+
+  // Force new session creation when needed
+  useEffect(() => {
+    if (forceNewSession && isLoaded) {
+      chat.createNewSession()
+      onNewSessionCreated()
+    }
+  }, [forceNewSession, isLoaded, chat, onNewSessionCreated])
 
   // Open settings if no API key
   useEffect(() => {
@@ -77,40 +106,101 @@ export default function ChatInterface() {
           sessions={chat.getAllSessions()}
           onLoadSession={chat.loadSession}
           onDeleteSession={chat.deleteSession}
+          onBackToHome={onBackToHome}
+        />
+      )}
+
+      {/* Resume Modal */}
+      {isResumeOpen && (
+        <ResumeModal
+          isOpen={isResumeOpen}
+          onClose={() => setIsResumeOpen(false)}
+          resume={currentResume}
         />
       )}
 
       {/* Main Chat Interface - Hidden when modals are open */}
-      {!isSettingsOpen && !isHistoryOpen && (
+      {!isSettingsOpen && !isHistoryOpen && !isResumeOpen && (
         <>
           {/* Header - LINE Style */}
           <header className="
-            flex items-center justify-between 
+            flex items-center justify-between
             px-4 py-4
             bg-white/95 dark:bg-gray-800/95 backdrop-blur-lg
             border-b border-gray-200/50 dark:border-gray-700/50
             shadow-lg shadow-gray-100/50 dark:shadow-gray-900/50
           ">
-        <div className="flex-1"></div>
+            {/* Left side - Back to Home Button */}
+            <div className="flex items-center">
+              <button
+                onClick={onBackToHome}
+                className="
+                  flex flex-col items-center gap-1 px-3 py-2 rounded-xl
+                  hover:bg-gray-100 dark:hover:bg-gray-700/50
+                  active:scale-95
+                  transition-all duration-150
+                  text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200
+                "
+                title="履歴書選択に戻る"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                </svg>
+                <span className="text-xs font-medium">戻る</span>
+              </button>
+            </div>
 
-        <div className="flex items-center gap-2">
-          {/* History Button */}
-          <button
-            onClick={() => setIsHistoryOpen(true)}
-            className="
-              flex flex-col items-center gap-1 px-3 py-2 rounded-xl
-              hover:bg-gray-100 dark:hover:bg-gray-700/50
-              active:scale-95
-              transition-all duration-150
-              text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200
-            "
-            title="履歴"
-          >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0118 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25" />
-            </svg>
-            <span className="text-xs font-medium">履歴</span>
-          </button>
+            {/* Center - Interview Title */}
+            <div className="flex-1 text-center">
+              <h1 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+                🎯 模擬面接
+              </h1>
+              {currentResume && (
+                <p className="text-xs text-gray-600 dark:text-gray-400">
+                  {currentResume.personalInfo.fullName}
+                </p>
+              )}
+            </div>
+
+            {/* Right side - Action Buttons */}
+            <div className="flex items-center gap-2">
+              {/* Resume Button */}
+              {currentResume && (
+                <button
+                  onClick={() => setIsResumeOpen(true)}
+                  className="
+                    flex flex-col items-center gap-1 px-3 py-2 rounded-xl
+                    hover:bg-gray-100 dark:hover:bg-gray-700/50
+                    active:scale-95
+                    transition-all duration-150
+                    text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200
+                  "
+                  title="履歴書を表示"
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                  </svg>
+                  <span className="text-xs font-medium">履歴書</span>
+                </button>
+              )}
+
+              {/* History Button */}
+              <button
+                onClick={() => setIsHistoryOpen(true)}
+                className="
+                  flex flex-col items-center gap-1 px-3 py-2 rounded-xl
+                  hover:bg-gray-100 dark:hover:bg-gray-700/50
+                  active:scale-95
+                  transition-all duration-150
+                  text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200
+                "
+                title="履歴"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0118 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25" />
+                </svg>
+                <span className="text-xs font-medium">履歴</span>
+              </button>
 
           {/* New Chat Button */}
           <button

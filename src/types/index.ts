@@ -22,11 +22,53 @@ export interface GeminiConfig {
   maxTokens: number
 }
 
+export interface Resume {
+  id: string
+  name: string
+  personalInfo: {
+    fullName: string
+    email: string
+    phone: string
+    address: string
+    dateOfBirth?: string
+  }
+  education: {
+    school: string
+    degree: string
+    major: string
+    graduationYear: string
+    gpa?: string
+  }[]
+  experience: {
+    company: string
+    position: string
+    startDate: string
+    endDate: string
+    description: string[]
+  }[]
+  skills: {
+    technical: string[]
+    languages: string[]
+    certifications: string[]
+  }
+  projects: {
+    name: string
+    description: string
+    technologies: string[]
+    duration: string
+  }[]
+  interests: string[]
+  selfIntroduction: string
+}
+
 export interface AppSettings {
   geminiConfig: GeminiConfig
   darkMode: boolean
   saveHistory: boolean
   autoTitle: boolean
+  selectedResume: string | null
+  enableStreaming: boolean
+  streamingSpeed: 'fast' | 'normal' | 'slow'
 }
 
 export interface GeminiRequest {
@@ -39,6 +81,9 @@ export interface GeminiRequest {
     maxOutputTokens: number
     topP: number
     topK: number
+    thinkingConfig?: {
+      thinkingBudget: number
+    }
   }
   safetySettings: {
     category: string

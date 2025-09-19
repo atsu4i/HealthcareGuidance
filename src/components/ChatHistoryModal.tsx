@@ -13,14 +13,16 @@ interface ChatHistoryModalProps {
   sessions: ChatSession[]
   onLoadSession: (sessionId: string) => void
   onDeleteSession: (sessionId: string) => void
+  onBackToHome?: () => void
 }
 
-export default function ChatHistoryModal({ 
-  isOpen, 
-  onClose, 
+export default function ChatHistoryModal({
+  isOpen,
+  onClose,
   sessions,
   onLoadSession,
-  onDeleteSession
+  onDeleteSession,
+  onBackToHome
 }: ChatHistoryModalProps) {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState<string | null>(null)
 
@@ -33,9 +35,11 @@ export default function ChatHistoryModal({
   }
 
   const handleDeleteSession = (sessionId: string) => {
+    console.log('handleDeleteSession called with sessionId:', sessionId)
     onDeleteSession(sessionId)
     setShowDeleteConfirm(null)
-    showNotification('会話を削除しました', 'success')
+    showNotification('会話を削除しました。リストが更新されます。', 'success')
+    console.log('Delete session completed')
   }
 
   const getPreviewText = (session: ChatSession): string => {
@@ -50,36 +54,75 @@ export default function ChatHistoryModal({
   }
 
   return (
-    <div className="
-      fixed inset-0 z-50 
-      bg-white dark:bg-gray-900 
-      h-full w-full 
-      flex flex-col
-      animate-fade-in
-    ">
+    <div
+      style={{
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        zIndex: 99999,
+        backgroundColor: 'white',
+        width: '100%',
+        height: '100%',
+        display: 'flex',
+        flexDirection: 'column'
+      }}
+    >
       {/* Header */}
-      <header className="
-        flex items-center justify-between 
-        px-4 py-4
-        bg-white dark:bg-gray-900
-        border-b border-gray-200 dark:border-gray-700
-        shadow-sm
-      ">
-        <h1 className="text-xl font-bold text-gray-900 dark:text-gray-100">
-          会話履歴
-        </h1>
+      <header
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          padding: '16px',
+          backgroundColor: 'white',
+          borderBottom: '1px solid #e5e7eb',
+          boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)'
+        }}
+      >
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          {onBackToHome && (
+            <button
+              onClick={onBackToHome}
+              style={{
+                padding: '8px',
+                borderRadius: '50%',
+                backgroundColor: 'transparent',
+                border: 'none',
+                cursor: 'pointer',
+                color: '#6b7280',
+                transition: 'all 0.15s'
+              }}
+              onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#f3f4f6'}
+              onMouseOut={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+              title="トップページに戻る"
+            >
+              <svg style={{ width: '24px', height: '24px' }} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+              </svg>
+            </button>
+          )}
+          <h1 style={{ fontSize: '20px', fontWeight: 'bold', color: '#111827', margin: 0 }}>
+            会話履歴
+          </h1>
+        </div>
         <button
           onClick={onClose}
-          className="
-            p-2 rounded-full
-            hover:bg-gray-100 dark:hover:bg-gray-800
-            active:scale-95
-            transition-all duration-150
-            text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200
-          "
+          style={{
+            padding: '8px',
+            borderRadius: '50%',
+            backgroundColor: 'transparent',
+            border: 'none',
+            cursor: 'pointer',
+            color: '#6b7280',
+            transition: 'all 0.15s'
+          }}
+          onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#f3f4f6'}
+          onMouseOut={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
           title="閉じる"
         >
-          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+          <svg style={{ width: '24px', height: '24px' }} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
           </svg>
         </button>
@@ -192,40 +235,83 @@ export default function ChatHistoryModal({
 
       {/* Delete Confirmation Modal */}
       {showDeleteConfirm && (
-        <div className="fixed inset-0 z-60 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-          <div className="bg-white dark:bg-gray-800 rounded-xl p-6 mx-4 max-w-sm w-full shadow-2xl">
-            <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100 mb-2">
+        <div
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            zIndex: 999999,
+            backgroundColor: 'rgba(0, 0, 0, 0.6)',
+            backdropFilter: 'blur(4px)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center'
+          }}
+        >
+          <div
+            style={{
+              backgroundColor: 'white',
+              borderRadius: '12px',
+              padding: '24px',
+              margin: '16px',
+              maxWidth: '384px',
+              width: '100%',
+              boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)'
+            }}
+          >
+            <h3 style={{ fontSize: '18px', fontWeight: 'bold', color: '#111827', marginBottom: '8px' }}>
               会話を削除しますか？
             </h3>
-            <p className="text-sm text-gray-600 dark:text-gray-300 mb-6">
+            <p style={{ fontSize: '14px', color: '#6b7280', marginBottom: '16px', lineHeight: '1.5' }}>
+              <strong>
+                {sessions.find(s => s.id === showDeleteConfirm)?.title || '選択された会話'}
+              </strong>
+            </p>
+            <p style={{ fontSize: '14px', color: '#6b7280', marginBottom: '24px', lineHeight: '1.5' }}>
               この操作は取り消せません。<br />
               会話履歴が完全に削除されます。
             </p>
-            <div className="flex gap-3">
+            <div style={{ display: 'flex', gap: '12px' }}>
               <button
                 onClick={() => setShowDeleteConfirm(null)}
-                className="
-                  flex-1 px-4 py-2
-                  border border-gray-300 dark:border-gray-600
-                  text-gray-700 dark:text-gray-300
-                  rounded-lg
-                  hover:bg-gray-50 dark:hover:bg-gray-700
-                  transition-colors
-                  font-medium
-                "
+                style={{
+                  flex: 1,
+                  padding: '8px 16px',
+                  backgroundColor: '#e5e7eb',
+                  color: '#374151',
+                  borderRadius: '8px',
+                  border: 'none',
+                  cursor: 'pointer',
+                  fontWeight: '500',
+                  transition: 'background-color 0.15s'
+                }}
+                onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#d1d5db'}
+                onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#e5e7eb'}
               >
                 キャンセル
               </button>
               <button
-                onClick={() => handleDeleteSession(showDeleteConfirm)}
-                className="
-                  flex-1 px-4 py-2
-                  bg-red-500 hover:bg-red-600
-                  text-white
-                  rounded-lg
-                  transition-colors
-                  font-medium
-                "
+                onClick={() => {
+                  console.log('Delete button clicked, sessionId:', showDeleteConfirm)
+                  if (showDeleteConfirm) {
+                    handleDeleteSession(showDeleteConfirm)
+                  }
+                }}
+                style={{
+                  flex: 1,
+                  padding: '8px 16px',
+                  backgroundColor: '#ef4444',
+                  color: 'white',
+                  borderRadius: '8px',
+                  border: 'none',
+                  cursor: 'pointer',
+                  fontWeight: '500',
+                  transition: 'background-color 0.15s'
+                }}
+                onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#dc2626'}
+                onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#ef4444'}
               >
                 削除
               </button>

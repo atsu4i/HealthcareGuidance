@@ -18,7 +18,10 @@ export const DEFAULT_SETTINGS: AppSettings = {
   },
   darkMode: false,
   saveHistory: true,
-  autoTitle: true
+  autoTitle: true,
+  selectedResume: null,
+  enableStreaming: true,
+  streamingSpeed: 'normal'
 }
 
 // Settings management

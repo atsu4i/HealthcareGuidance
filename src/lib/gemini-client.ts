@@ -15,16 +15,19 @@ export const GEMINI_MODELS = {
   'gemini-2.5-pro': {
     name: '🔮 Gemini 2.5 Pro',
     endpoint: '/v1beta/models/gemini-2.5-pro:generateContent',
+    streamEndpoint: '/v1beta/models/gemini-2.5-pro:streamGenerateContent',
     maxTokens: 4000
   },
   'gemini-2.5-flash': {
-    name: '⚡ Gemini 2.5 Flash', 
+    name: '⚡ Gemini 2.5 Flash',
     endpoint: '/v1beta/models/gemini-2.5-flash:generateContent',
+    streamEndpoint: '/v1beta/models/gemini-2.5-flash:streamGenerateContent',
     maxTokens: 8000
   },
   'gemini-2.5-flash-lite': {
     name: '💨 Gemini 2.5 Flash Lite',
-    endpoint: '/v1beta/models/gemini-2.5-flash-lite:generateContent', 
+    endpoint: '/v1beta/models/gemini-2.5-flash-lite:generateContent',
+    streamEndpoint: '/v1beta/models/gemini-2.5-flash-lite:streamGenerateContent',
     maxTokens: 8000
   }
 } as const
@@ -51,11 +54,14 @@ const DEFAULT_SAFETY_SETTINGS = [
 
 export class GeminiClient {
   private baseUrl = 'https://generativelanguage.googleapis.com'
+  private systemPrompt: string
 
-  constructor(private config: GeminiConfig) {
+  constructor(private config: GeminiConfig, systemPrompt?: string) {
+    this.systemPrompt = systemPrompt || SYSTEM_PROMPT
     debug.log('GeminiClient initialized', {
       model: config.model,
-      hasApiKey: !!config.apiKey
+      hasApiKey: !!config.apiKey,
+      hasCustomPrompt: !!systemPrompt
     })
   }
 
@@ -77,7 +83,7 @@ export class GeminiClient {
         // First user message - prepend system prompt
         geminiMessages.push({
           role: 'user' as const,
-          parts: [{ text: `${SYSTEM_PROMPT}\n\n---\n\nユーザー: ${msg.content}` }]
+          parts: [{ text: `${this.systemPrompt}\n\n---\n\nユーザー: ${msg.content}` }]
         })
         isFirstUserMessage = false
       } else {
@@ -95,15 +101,28 @@ export class GeminiClient {
   // Build request body
   private buildRequestBody(messages: Message[]): GeminiRequest {
     const geminiMessages = this.convertToGeminiFormat(messages)
-    
+
+    const generationConfig: GeminiRequest['generationConfig'] = {
+      temperature: this.config.temperature,
+      maxOutputTokens: GEMINI_MODELS[this.config.model].maxTokens,
+      topP: 0.92,
+      topK: 50,
+      // Add thinkingConfig for gemini-2.5-pro to improve response speed
+      // Setting to minimum value (128) as per: https://ai.google.dev/gemini-api/docs/thinking
+      ...(this.config.model === 'gemini-2.5-pro' && {
+        thinkingConfig: {
+          thinkingBudget: 128
+        }
+      })
+    }
+
+    if (this.config.model === 'gemini-2.5-pro') {
+      console.log('Applied thinkingConfig.thinkingBudget=128 for gemini-2.5-pro to improve response speed')
+    }
+
     return {
       contents: geminiMessages,
-      generationConfig: {
-        temperature: this.config.temperature,
-        maxOutputTokens: GEMINI_MODELS[this.config.model].maxTokens,
-        topP: 0.92,
-        topK: 50
-      },
+      generationConfig,
       safetySettings: DEFAULT_SAFETY_SETTINGS
     }
   }
@@ -207,7 +226,7 @@ export class GeminiClient {
     }
 
     const modelConfig = GEMINI_MODELS[this.config.model]
-    const url = `${this.baseUrl}${modelConfig.endpoint}?alt=sse&key=${this.config.apiKey}`
+    const url = `${this.baseUrl}${modelConfig.streamEndpoint}?key=${this.config.apiKey}`
     const requestBody = this.buildRequestBody(messages)
 
     debug.log('Gemini Streaming API request', {
@@ -242,29 +261,55 @@ export class GeminiClient {
 
       while (true) {
         const { done, value } = await reader.read()
-        
+
         if (done) break
 
         buffer += decoder.decode(value, { stream: true })
-        const lines = buffer.split('\n')
-        buffer = lines.pop() || ''
 
-        for (const line of lines) {
-          if (line.startsWith('data: ')) {
-            try {
-              const jsonStr = line.slice(6)
-              if (jsonStr.trim() === '[DONE]') continue
-              
-              const data = JSON.parse(jsonStr)
-              const content = data.candidates?.[0]?.content?.parts?.[0]?.text
-              
-              if (content) {
-                onChunk(content)
+        // Process complete JSON objects
+        let searchIndex = 0
+        while (true) {
+          const startIndex = buffer.indexOf('{', searchIndex)
+          if (startIndex === -1) break
+
+          let braceCount = 0
+          let endIndex = -1
+
+          // Find the matching closing brace
+          for (let i = startIndex; i < buffer.length; i++) {
+            if (buffer[i] === '{') braceCount++
+            else if (buffer[i] === '}') {
+              braceCount--
+              if (braceCount === 0) {
+                endIndex = i
+                break
               }
-            } catch (parseError) {
-              debug.error('Error parsing streaming chunk', parseError)
             }
           }
+
+          if (endIndex === -1) {
+            // Incomplete JSON object, wait for more data
+            searchIndex = startIndex + 1
+            break
+          }
+
+          // Extract and parse complete JSON object
+          const jsonString = buffer.slice(startIndex, endIndex + 1)
+          try {
+            const data = JSON.parse(jsonString)
+            const content = data.candidates?.[0]?.content?.parts?.[0]?.text
+
+            if (content) {
+              // Send only the delta content - client will accumulate
+              onChunk(content)
+            }
+          } catch (parseError) {
+            debug.log('Skipping invalid JSON:', jsonString.substring(0, 100) + '...')
+          }
+
+          // Remove processed JSON from buffer
+          buffer = buffer.slice(endIndex + 1)
+          searchIndex = 0
         }
       }
 

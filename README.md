@@ -1,16 +1,17 @@
-# 📱 Personal AI Assistant
+# 📱 AI Mock Interview
 
-iPhone最適化のシンプルなGemini APIパーソナルアシスタント
+iPhone最適化のGemini AI搭載模擬面接アプリ
 
 ## 🚀 特徴
 
+- 🎯 **AI面接練習**: 履歴書ベースの本格的な模擬面接
 - 🔮 **Gemini AI統合**: 3つのGeminiモデル対応（Pro/Flash/Flash-Lite）
+- 📋 **履歴書管理**: 複数履歴書パターン対応
 - 📱 **iPhone最適化**: PWA対応、縦画面特化UI
 - ⚡ **高速起動**: Next.js 14 + TypeScript
 - 🌙 **ダークモード**: 自動切り替え対応
-- 💾 **履歴保存**: LocalStorage による永続化
+- 💾 **履歴保存**: 面接セッションの永続化
 - 🔒 **セキュア**: APIキーの安全な管理
-- 🎭 **キャラクター**: 献身的なメイドAIとの対話
 - 💬 **LINE風UI**: なじみやすいチャット形式
 
 ## 🛠️ 技術スタック
@@ -135,8 +136,8 @@ docker-compose up -d --build
 
 ## 🔧 カスタマイズ
 
-### AIキャラクターの変更
-`src/lib/system-prompt.ts` でキャラクター設定を変更できます。
+### 面接スタンス・履歴書の変更
+詳細なカスタマイズ方法は [面接カスタマイズガイド](INTERVIEW_CUSTOMIZATION_GUIDE.md) を参照してください。
 
 ### UIテーマの調整
 Tailwind CSSクラスでカラーパレットやレイアウトを変更可能です。
@@ -146,7 +147,7 @@ Tailwind CSSクラスでカラーパレットやレイアウトを変更可能�
 
 ## 📚 開発リソース
 
-- [開発指示書](DEVELOPMENT_INSTRUCTIONS.md): 詳細な開発ガイドライン
+- [面接カスタマイズガイド](INTERVIEW_CUSTOMIZATION_GUIDE.md): 面接スタンスや履歴書の変更方法
 - [デプロイ手順](DEPLOYMENT.md): Synology NAS等への配置方法
 - [Claude Code設定](CLAUDE.md): AI開発アシスタント用の設定情報
 
@@ -172,4 +173,4 @@ MIT License
 
 ## 🤝 コントリビューション
 
-プルリクエストやイシューの投稿を歓迎します。開発前に `DEVELOPMENT_INSTRUCTIONS.md` をご確認ください。
+プルリクエストやイシューの投稿を歓迎します。開発前に [面接カスタマイズガイド](INTERVIEW_CUSTOMIZATION_GUIDE.md) をご確認ください。

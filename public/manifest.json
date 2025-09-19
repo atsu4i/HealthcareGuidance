@@ -1,7 +1,7 @@
 {
-  "name": "Personal AI Assistant",
-  "short_name": "AI助手",
-  "description": "Gemini-powered personal assistant for iPhone",
+  "name": "AI Mock Interview",
+  "short_name": "模擬面接",
+  "description": "AI-powered mock interview practice app",
   "theme_color": "#0ea5e9",
   "background_color": "#ffffff",
   "display": "standalone",
@@ -9,7 +9,7 @@
   "scope": "/",
   "start_url": "/",
   "lang": "ja",
-  "categories": ["productivity", "utilities"],
+  "categories": ["education", "productivity"],
   "icons": [
     {
       "src": "/icon-192.svg",
@@ -34,9 +34,9 @@
   ],
   "shortcuts": [
     {
-      "name": "新しいチャット",
-      "short_name": "新規",
-      "description": "新しい会話を開始",
+      "name": "新しい面接",
+      "short_name": "面接開始",
+      "description": "新しい模擬面接を開始",
       "url": "/",
       "icons": [
         {

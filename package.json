@@ -1,5 +1,5 @@
 {
-  "name": "gemini-personal-assistant",
+  "name": "ai-mock-interview",
   "version": "0.1.0",
   "private": true,
   "scripts": {
@@ -25,9 +25,10 @@
     "eslint": "^9.31.0",
     "eslint-config-next": "^15.4.4",
     "tailwindcss": "^4.1.11",
+    "tailwindcss-animate": "^1.0.7",
     "typescript": "^5.8.3"
   },
-  "description": "This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).",
+  "description": "AI-powered mock interview practice app built with Next.js and Gemini AI",
   "main": "index.js",
   "keywords": [],
   "author": "",

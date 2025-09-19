@@ -6,6 +6,7 @@ import { useState } from 'react'
 import { AppSettings, GeminiConfig } from '@/types'
 import { GEMINI_MODELS, GeminiClient } from '@/lib/gemini-client'
 import { showNotification } from '@/lib/utils'
+import { getAllResumeInfo } from '@/resumes'
 
 interface SettingsModalProps {
   isOpen: boolean
@@ -14,16 +15,19 @@ interface SettingsModalProps {
   onUpdateSettings: (updates: Partial<AppSettings>) => void
 }
 
-export default function SettingsModal({ 
-  isOpen, 
-  onClose, 
-  settings, 
-  onUpdateSettings 
+export default function SettingsModal({
+  isOpen,
+  onClose,
+  settings,
+  onUpdateSettings
 }: SettingsModalProps) {
   const [tempApiKey, setTempApiKey] = useState(settings.geminiConfig.apiKey)
   const [tempModel, setTempModel] = useState(settings.geminiConfig.model)
+  const [tempSelectedResume, setTempSelectedResume] = useState(settings.selectedResume)
   const [showApiKey, setShowApiKey] = useState(false)
   const [isTestingConnection, setIsTestingConnection] = useState(false)
+
+  const availableResumes = getAllResumeInfo()
 
   if (!isOpen) return null
 
@@ -33,7 +37,8 @@ export default function SettingsModal({
         ...settings.geminiConfig,
         apiKey: tempApiKey,
         model: tempModel
-      }
+      },
+      selectedResume: tempSelectedResume
     }
 
     onUpdateSettings(updates)
@@ -78,13 +83,21 @@ export default function SettingsModal({
   }
 
   return (
-    <div className="
-      fixed inset-0 z-50 
-      bg-white dark:bg-gray-900 
-      h-full w-full 
-      flex flex-col
-      animate-fade-in
-    ">
+    <div
+      style={{
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        zIndex: 99999,
+        backgroundColor: 'white',
+        width: '100%',
+        height: '100%',
+        display: 'flex',
+        flexDirection: 'column'
+      }}
+    >
       {/* Settings Header */}
       <header className="
         flex items-center justify-between 
@@ -216,6 +229,44 @@ export default function SettingsModal({
             </div>
           </div>
 
+          {/* Resume Selection Card */}
+          <div className="bg-white dark:bg-gray-700 rounded-xl p-6 shadow-sm border border-gray-200 dark:border-gray-600">
+            <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4 flex items-center gap-2">
+              📋 <span>履歴書選択</span>
+            </h3>
+
+            <div className="space-y-3">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                面接で使用する履歴書
+              </label>
+              <select
+                value={tempSelectedResume || ''}
+                onChange={(e) => setTempSelectedResume(e.target.value || null)}
+                className="
+                  w-full px-3 py-3
+                  border border-gray-300 dark:border-gray-500
+                  rounded-lg
+                  bg-gray-50 dark:bg-gray-600
+                  text-gray-900 dark:text-gray-100
+                  focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent
+                  text-[16px]
+                "
+              >
+                <option value="">履歴書を選択してください</option>
+                {availableResumes.map((resume) => (
+                  <option key={resume.id} value={resume.id}>
+                    {resume.name}
+                  </option>
+                ))}
+              </select>
+              {tempSelectedResume && (
+                <p className="text-xs text-gray-500 dark:text-gray-400 leading-relaxed">
+                  選択中: {availableResumes.find(r => r.id === tempSelectedResume)?.description}
+                </p>
+              )}
+            </div>
+          </div>
+
           {/* App Settings Card */}
           <div className="bg-white dark:bg-gray-700 rounded-xl p-6 shadow-sm border border-gray-200 dark:border-gray-600">
             <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4 flex items-center gap-2">
@@ -296,6 +347,71 @@ export default function SettingsModal({
                   </span>
                 </button>
               </div>
+
+              {/* ストリーミング設定 */}
+              <div className="flex items-center justify-between py-2">
+                <div>
+                  <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                    ストリーミング表示
+                  </label>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                    リアルタイムで応答を表示
+                  </p>
+                </div>
+                <button
+                  onClick={() => onUpdateSettings({ enableStreaming: !settings.enableStreaming })}
+                  className={`
+                    relative inline-flex h-8 w-16 items-center rounded-full transition-colors shadow-inner
+                    ${settings.enableStreaming ? 'bg-blue-500' : 'bg-gray-300 dark:bg-gray-600'}
+                  `}
+                >
+                  <span className={`
+                    inline-block h-6 w-6 transform rounded-full bg-white transition-transform shadow-md border border-gray-200
+                    ${settings.enableStreaming ? 'translate-x-9' : 'translate-x-1'}
+                  `} />
+                  <span className={`
+                    absolute left-2 top-1/2 transform -translate-y-1/2 text-xs font-medium transition-opacity pointer-events-none
+                    ${settings.enableStreaming ? 'opacity-0' : 'opacity-100 text-gray-600'}
+                  `}>
+                    OFF
+                  </span>
+                  <span className={`
+                    absolute right-2 top-1/2 transform -translate-y-1/2 text-xs font-medium transition-opacity pointer-events-none
+                    ${settings.enableStreaming ? 'opacity-100 text-white' : 'opacity-0'}
+                  `}>
+                    ON
+                  </span>
+                </button>
+              </div>
+
+              {/* ストリーミング速度設定 */}
+              {settings.enableStreaming && (
+                <div className="py-2">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    表示速度
+                  </label>
+                  <select
+                    value={settings.streamingSpeed}
+                    onChange={(e) => onUpdateSettings({ streamingSpeed: e.target.value as 'fast' | 'normal' | 'slow' })}
+                    className="
+                      w-full px-3 py-3
+                      border border-gray-300 dark:border-gray-500
+                      rounded-lg
+                      bg-gray-50 dark:bg-gray-600
+                      text-gray-900 dark:text-gray-100
+                      focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent
+                      text-[16px]
+                    "
+                  >
+                    <option value="fast">⚡ 高速</option>
+                    <option value="normal">📖 普通（推奨）</option>
+                    <option value="slow">🐌 ゆっくり</option>
+                  </select>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                    読みやすい速度で応答を表示します
+                  </p>
+                </div>
+              )}
             </div>
           </div>
 
