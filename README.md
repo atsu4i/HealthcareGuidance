@@ -53,8 +53,8 @@ iPhone最適化のGemini AI搭載保健指導練習アプリ
 ### インストール
 ```bash
 # リポジトリをクローン
-git clone <repository-url>
-cd ai-interview_HealthGuidance
+git clone https://github.com/atsu4i/HealthcareGuidance.git
+cd HealthcareGuidance
 
 # 依存関係をインストール
 npm install
