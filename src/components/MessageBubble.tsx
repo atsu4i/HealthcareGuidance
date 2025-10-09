@@ -10,9 +10,10 @@ import { useState } from 'react'
 interface MessageBubbleProps {
   message: Message
   isLatest?: boolean
+  avatarImage?: string
 }
 
-export default function MessageBubble({ message, isLatest = false }: MessageBubbleProps) {
+export default function MessageBubble({ message, isLatest = false, avatarImage = '/ai-avatar-rem.png' }: MessageBubbleProps) {
   const [showActions, setShowActions] = useState(false)
   const isUser = message.role === 'user'
 
@@ -34,16 +35,16 @@ export default function MessageBubble({ message, isLatest = false }: MessageBubb
     `}>
       {/* AI Avatar (left side only) */}
       {!isUser && (
-        <div className="flex-shrink-0 w-24 h-24 mb-1">
-          <div className="w-24 h-24 rounded-full bg-gradient-to-br from-emerald-400 to-cyan-500 flex items-center justify-center shadow-lg overflow-hidden">
-            <img 
-              src="/ai-avatar-rem.png" 
-              alt="AI Avatar" 
-              className="w-20 h-20 object-cover object-center rounded-full"
-              style={{ 
-                imageRendering: 'auto',
-                maxWidth: '80px',
-                maxHeight: '80px'
+        <div className="flex-shrink-0 mb-1" style={{ width: '60px', height: '60px' }}>
+          <div className="rounded-full bg-gradient-to-br from-emerald-400 to-cyan-500 flex items-center justify-center shadow-lg overflow-hidden" style={{ width: '60px', height: '60px' }}>
+            <img
+              src={avatarImage}
+              alt="AI Avatar"
+              className="object-cover object-center"
+              style={{
+                width: '60px',
+                height: '60px',
+                imageRendering: 'auto'
               }}
             />
           </div>

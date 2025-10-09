@@ -1,17 +1,17 @@
-// 📱 AI Mock Interview - Resume Selection Component
+// 📱 Health Guidance Simulation - Scenario Selection Component
 
 'use client'
 
 import { useState, useEffect } from 'react'
-import { getAllResumeInfo, type ResumeId, loadResume } from '@/resumes'
-import { AppSettings, Resume } from '@/types'
+import { getAllScenarioInfo, type ScenarioId, loadScenario } from '@/scenarios'
+import { AppSettings, HealthGuidanceScenario } from '@/types'
 import { useChat } from '@/hooks/useChat'
 import ResumeModal from './ResumeModal'
 
 interface ResumeSelectionProps {
   settings: AppSettings
   onUpdateSettings: (updates: Partial<AppSettings>) => void
-  onSelectResume: (resumeId: ResumeId) => void
+  onSelectResume: (scenarioId: ScenarioId) => void
   isValidApiKey: boolean
   onOpenSettings?: () => void
   onOpenHistory?: () => void
@@ -26,8 +26,8 @@ export default function ResumeSelection({
   onOpenHistory
 }: ResumeSelectionProps) {
   const [isResumePreviewOpen, setIsResumePreviewOpen] = useState(false)
-  const [previewResume, setPreviewResume] = useState<Resume | null>(null)
-  const availableResumes = getAllResumeInfo()
+  const [previewResume, setPreviewResume] = useState<HealthGuidanceScenario | null>(null)
+  const availableResumes = getAllScenarioInfo()
 
   // Debug state changes
   useEffect(() => {
@@ -39,20 +39,20 @@ export default function ResumeSelection({
 
   const handleRandomSelect = () => {
     const randomIndex = Math.floor(Math.random() * availableResumes.length)
-    const randomResume = availableResumes[randomIndex]
-    onSelectResume(randomResume.id as ResumeId)
+    const randomScenario = availableResumes[randomIndex]
+    onSelectResume(randomScenario.id as ScenarioId)
   }
 
-  const handlePreviewResume = async (resumeId: ResumeId) => {
-    console.log('Resume preview button clicked for:', resumeId)
+  const handlePreviewResume = (scenarioId: ScenarioId) => {
+    console.log('Scenario preview button clicked for:', scenarioId)
     try {
-      const resume = await loadResume(resumeId)
-      console.log('Resume loaded:', resume)
-      setPreviewResume(resume)
+      const scenario = loadScenario(scenarioId)
+      console.log('Scenario loaded:', scenario)
+      setPreviewResume(scenario)
       setIsResumePreviewOpen(true)
       console.log('Modal should be open now')
     } catch (error) {
-      console.error('Failed to load resume for preview:', error)
+      console.error('Failed to load scenario for preview:', error)
     }
   }
 
@@ -73,10 +73,10 @@ export default function ResumeSelection({
         ">
           <div>
             <h1 className="text-xl font-bold text-gray-900 dark:text-gray-100">
-              🎯 模擬面接
+              🏥 保健指導シミュレーション
             </h1>
             <p className="text-sm text-gray-600 dark:text-gray-400">
-              履歴書を選択して面接を開始
+              シナリオを選択して保健指導を開始
             </p>
           </div>
           <div className="flex items-center gap-3">
@@ -154,10 +154,15 @@ export default function ResumeSelection({
                     Gemini APIキーが必要です
                   </h3>
                   <p className="text-sm text-amber-700 dark:text-amber-300 mb-3">
-                    面接を開始するには、設定からGemini APIキーを入力してください。
+                    保健指導シミュレーションを開始するには、設定からGemini APIキーを入力してください。
                   </p>
                   <button
-                    onClick={() => setIsSettingsOpen(true)}
+                    onClick={() => {
+                      console.log('Settings button clicked from warning')
+                      if (onOpenSettings) {
+                        onOpenSettings()
+                      }
+                    }}
                     className="
                       px-4 py-2 rounded-lg
                       bg-amber-600 hover:bg-amber-700
@@ -193,21 +198,21 @@ export default function ResumeSelection({
                 <div className="text-2xl">🎲</div>
                 <div>
                   <div className="font-bold text-lg">ランダム選択</div>
-                  <div className="text-sm opacity-90">履歴書をランダムに選んで面接開始</div>
+                  <div className="text-sm opacity-90">シナリオをランダムに選んで保健指導開始</div>
                 </div>
               </div>
             </button>
           </div>
 
-          {/* Resume List */}
+          {/* Scenario List */}
           <div className="space-y-4">
             <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">
-              📋 履歴書を選択
+              🏥 シナリオを選択
             </h2>
 
-            {availableResumes.map((resume) => (
+            {availableResumes.map((scenario) => (
               <div
-                key={resume.id}
+                key={scenario.id}
                 className="
                   w-full p-6 rounded-xl
                   bg-white dark:bg-gray-800
@@ -218,20 +223,20 @@ export default function ResumeSelection({
               >
                 <div className="flex items-start gap-4">
                   <div className="text-2xl mt-1">
-                    {resume.id === 'entry-level-engineer' ? '🌱' : '⭐'}
+                    👤
                   </div>
                   <div className="flex-1">
                     <h3 className="font-semibold text-gray-900 dark:text-gray-100 mb-1">
-                      {resume.name}
+                      {scenario.name}
                     </h3>
                     <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
-                      {resume.description}
+                      {scenario.description}
                     </p>
 
                     {/* Action Buttons */}
                     <div className="flex gap-3">
                       <button
-                        onClick={() => handlePreviewResume(resume.id as ResumeId)}
+                        onClick={() => handlePreviewResume(scenario.id as ScenarioId)}
                         className="
                           flex items-center gap-2 px-4 py-2 rounded-lg
                           bg-gray-100 dark:bg-gray-700
@@ -240,17 +245,17 @@ export default function ResumeSelection({
                           text-sm font-medium
                           transition-colors
                         "
-                        title="履歴書を確認"
+                        title="シナリオを確認"
                       >
                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                         </svg>
-                        確認
+                        詳細確認
                       </button>
 
                       <button
-                        onClick={() => onSelectResume(resume.id as ResumeId)}
+                        onClick={() => onSelectResume(scenario.id as ScenarioId)}
                         disabled={!isValidApiKey}
                         className="
                           flex items-center gap-2 px-4 py-2 rounded-lg
@@ -259,12 +264,12 @@ export default function ResumeSelection({
                           text-white text-sm font-medium
                           transition-colors
                         "
-                        title="面接を開始"
+                        title="保健指導を開始"
                       >
                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.828 14.828a4 4 0 01-5.656 0M9 10h1m4 0h1m-7-7h8a2 2 0 012 2v8M5 3a2 2 0 00-2 2v8a2 2 0 002 2h8a2 2 0 002-2V5a2 2 0 00-2-2H5z" />
                         </svg>
-                        面接開始
+                        面談開始
                       </button>
                     </div>
                   </div>

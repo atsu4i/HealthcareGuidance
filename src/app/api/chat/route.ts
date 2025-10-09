@@ -1,10 +1,10 @@
-// 📱 Personal AI Assistant - Chat API Route
+// 📱 Health Guidance Simulation - Chat API Route
 
 import { NextRequest, NextResponse } from 'next/server'
 import { GeminiClient } from '@/lib/gemini-client'
 import { Message, GeminiConfig } from '@/types'
-import { loadResume } from '@/resumes'
-import { generateInterviewPrompt, DEFAULT_PROMPT } from '@/lib/system-prompt'
+import { loadScenario, type ScenarioId } from '@/scenarios'
+import { generateHealthGuidancePrompt, DEFAULT_PROMPT } from '@/lib/system-prompt'
 
 export async function POST(request: NextRequest) {
   try {
@@ -42,16 +42,16 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Generate system prompt based on selected resume
+    // Generate system prompt based on selected scenario
     let systemPrompt = DEFAULT_PROMPT
     if (selectedResume) {
       try {
-        const resume = await loadResume(selectedResume as any)
-        if (resume) {
-          systemPrompt = generateInterviewPrompt(resume)
+        const scenario = loadScenario(selectedResume as ScenarioId)
+        if (scenario) {
+          systemPrompt = generateHealthGuidancePrompt(scenario)
         }
       } catch (error) {
-        console.error('Failed to load resume:', error)
+        console.error('Failed to load scenario:', error)
         // Continue with default prompt
       }
     }

@@ -13,6 +13,7 @@ export interface ChatSession {
   messages: Message[]
   createdAt: Date
   updatedAt: Date
+  scenarioId?: string
 }
 
 export interface GeminiConfig {
@@ -59,6 +60,105 @@ export interface Resume {
   }[]
   interests: string[]
   selfIntroduction: string
+}
+
+// 保健指導シナリオの型定義
+export interface HealthGuidanceScenario {
+  id: string
+  name: string
+  description: string
+  personalInfo: {
+    fullName: string
+    age: number
+    gender: '男性' | '女性'
+    occupation: string
+    familyStructure: string
+    address?: string
+  }
+  healthCheckResults: {
+    date: string
+    height: number
+    weight: number
+    bmi: number
+    waistCircumference: number
+    bloodPressure: {
+      systolic: number
+      diastolic: number
+    }
+    bloodTest: {
+      fastingBloodSugar: number
+      hba1c: number
+      ldlCholesterol: number
+      hdlCholesterol: number
+      triglycerides: number
+      ast: number
+      alt: number
+      gammaGtp: number
+      creatinine?: number
+      uricAcid?: number
+    }
+    urineTest?: {
+      protein: string
+      sugar: string
+    }
+  }
+  lifestyle: {
+    diet: {
+      pattern: string
+      details: string[]
+      problems: string[]
+    } | string
+    exercise: {
+      frequency: string
+      details: string[]
+      barriers: string[]
+    } | string
+    alcohol: {
+      frequency: string
+      amount: string
+      details: string[]
+    } | string
+    smoking: {
+      status: '非喫煙' | '喫煙中' | '過去喫煙'
+      details?: string
+    } | string
+    sleep: {
+      duration: string
+      quality: string
+      problems: string[]
+    } | string
+    stress: {
+      level: '低' | '中' | '高'
+      sources: string[]
+      copingMethods: string[]
+    } | string
+  }
+  medicalHistory: {
+    currentDiseases: string[]
+    pastDiseases: string[]
+    medications: string[]
+    familyHistory: string | string[]
+  }
+  psychologicalProfile: {
+    personality: string
+    responseStyle: '協力的' | '防衛的' | '無関心' | '知識あり実行なし' | '複雑な背景'
+    motivationLevel: '高' | '中' | '低'
+    healthLiteracy: '高' | '中' | '低'
+    concerns: string[]
+    strengths: string[]
+  } | {
+    attitudeTowardGuidance: string
+    motivationLevel: string
+    healthAwareness: string
+    changeReadiness: string
+    communicationStyle: string
+    copingMechanism: string
+  }
+  backgroundStory: string
+  guidanceGoals: string[]
+  expectedChallenges: string[]
+  responseStyle?: string
+  difficulty?: string
 }
 
 export interface AppSettings {

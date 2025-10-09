@@ -8,7 +8,9 @@ const nextConfig = {
   reactStrictMode: true,
   experimental: {
     typedRoutes: true,
-  }
+  },
+  // Disable static optimization to avoid prerendering issues
+  output: 'standalone',
 }
 
 module.exports = withPWA(nextConfig)

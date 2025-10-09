@@ -12,13 +12,14 @@ interface InputAreaProps {
   disabled?: boolean
 }
 
-export default function InputArea({ 
-  onSendMessage, 
-  isLoading, 
-  state, 
-  disabled = false 
+export default function InputArea({
+  onSendMessage,
+  isLoading,
+  state,
+  disabled = false
 }: InputAreaProps) {
   const [input, setInput] = useState('')
+  const [isComposing, setIsComposing] = useState(false)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
 
   // Auto-resize textarea
@@ -47,7 +48,7 @@ export default function InputArea({
 
     onSendMessage(message)
     setInput('')
-    
+
     // Reset textarea height
     if (textareaRef.current) {
       textareaRef.current.style.height = 'auto'
@@ -55,10 +56,19 @@ export default function InputArea({
   }
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
+    // IME変換中はEnterキーを無視
+    if (e.key === 'Enter' && !e.shiftKey && !isComposing) {
       e.preventDefault()
       sendMessage()
     }
+  }
+
+  const handleCompositionStart = () => {
+    setIsComposing(true)
+  }
+
+  const handleCompositionEnd = () => {
+    setIsComposing(false)
   }
 
   const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
@@ -125,8 +135,10 @@ export default function InputArea({
               value={input}
               onChange={handleInputChange}
               onKeyDown={handleKeyDown}
+              onCompositionStart={handleCompositionStart}
+              onCompositionEnd={handleCompositionEnd}
               placeholder={
-                disabled 
+                disabled
                   ? 'APIキーを設定してください...'
                   : isLoading
                   ? 'AIが応答中...'

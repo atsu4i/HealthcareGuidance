@@ -1,12 +1,13 @@
-// 📱 AI Mock Interview - Main Page
+// 📱 Health Guidance Simulation - Main Page
 
 'use client'
 
 import { useState, useEffect } from 'react'
 import { useSettings } from '@/hooks/useSettings'
-import { Resume } from '@/types'
-import { type ResumeId, loadResume } from '@/resumes'
+import { HealthGuidanceScenario } from '@/types'
+import { type ScenarioId, loadScenario } from '@/scenarios'
 import { useChat } from '@/hooks/useChat'
+import { activeSessionStorage } from '@/lib/storage'
 import ResumeSelection from '@/components/ResumeSelection'
 import ChatInterface from '@/components/ChatInterface'
 import SettingsModal from '@/components/SettingsModal'
@@ -17,54 +18,54 @@ type AppState = 'resume-selection' | 'interview'
 export default function HomePage() {
   const { settings, updateSettings, isValidApiKey, isLoaded } = useSettings()
   const [appState, setAppState] = useState<AppState>('resume-selection')
-  const [currentResume, setCurrentResume] = useState<Resume | null>(null)
+  const [currentResume, setCurrentResume] = useState<HealthGuidanceScenario | null>(null)
   const [forceNewSession, setForceNewSession] = useState(false)
 
   // Modal states
   const [isSettingsOpen, setIsSettingsOpen] = useState(false)
   const [isHistoryOpen, setIsHistoryOpen] = useState(false)
 
-  // Chat hook for history access
-  const chat = useChat(settings)
+  // Chat hook for history access (skip initial session creation)
+  const chat = useChat({ settings, updateSettings, skipInitialSession: true })
 
   // Force refresh sessions after delete
   const [sessionsRefreshKey, setSessionsRefreshKey] = useState(0)
 
-  // Load current resume when settings change
+  // Load current scenario when settings change
   useEffect(() => {
-    const loadCurrentResume = async () => {
-      if (settings.selectedResume) {
-        try {
-          const resume = await loadResume(settings.selectedResume as ResumeId)
-          setCurrentResume(resume)
-        } catch (error) {
-          console.error('Failed to load resume:', error)
+    if (isLoaded && settings.selectedResume) {
+      try {
+        const scenario = loadScenario(settings.selectedResume as ScenarioId)
+        if (scenario) {
+          setCurrentResume(scenario)
+        } else {
           setCurrentResume(null)
         }
-      } else {
+      } catch (error) {
+        console.error('Failed to load scenario:', error)
         setCurrentResume(null)
       }
-    }
-
-    if (isLoaded) {
-      loadCurrentResume()
+    } else {
+      setCurrentResume(null)
     }
   }, [settings.selectedResume, isLoaded])
 
-  // Handle resume selection and navigation to interview
-  const handleSelectResume = async (resumeId: ResumeId) => {
+  // Handle scenario selection and navigation to interview
+  const handleSelectResume = (scenarioId: ScenarioId) => {
     try {
-      const resume = await loadResume(resumeId)
-      if (resume) {
-        // Update settings with selected resume
-        updateSettings({ selectedResume: resumeId })
-        setCurrentResume(resume)
+      const scenario = loadScenario(scenarioId)
+      if (scenario) {
+        // Update settings with selected scenario
+        updateSettings({ selectedResume: scenarioId })
+        setCurrentResume(scenario)
+        // Clear active session before starting new interview
+        activeSessionStorage.clear()
         // Force new session creation when starting interview
         setForceNewSession(true)
         setAppState('interview')
       }
     } catch (error) {
-      console.error('Failed to load resume:', error)
+      console.error('Failed to load scenario:', error)
     }
   }
 

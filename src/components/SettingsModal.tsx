@@ -1,4 +1,4 @@
-// 📱 Personal AI Assistant - Settings Modal Component
+// 📱 Health Guidance Simulation - Settings Modal Component
 
 'use client'
 
@@ -6,7 +6,7 @@ import { useState } from 'react'
 import { AppSettings, GeminiConfig } from '@/types'
 import { GEMINI_MODELS, GeminiClient } from '@/lib/gemini-client'
 import { showNotification } from '@/lib/utils'
-import { getAllResumeInfo } from '@/resumes'
+import { getAllScenarioInfo } from '@/scenarios'
 
 interface SettingsModalProps {
   isOpen: boolean
@@ -27,7 +27,7 @@ export default function SettingsModal({
   const [showApiKey, setShowApiKey] = useState(false)
   const [isTestingConnection, setIsTestingConnection] = useState(false)
 
-  const availableResumes = getAllResumeInfo()
+  const availableScenarios = getAllScenarioInfo()
 
   if (!isOpen) return null
 
@@ -229,15 +229,15 @@ export default function SettingsModal({
             </div>
           </div>
 
-          {/* Resume Selection Card */}
+          {/* Scenario Selection Card */}
           <div className="bg-white dark:bg-gray-700 rounded-xl p-6 shadow-sm border border-gray-200 dark:border-gray-600">
             <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4 flex items-center gap-2">
-              📋 <span>履歴書選択</span>
+              🏥 <span>シナリオ選択</span>
             </h3>
 
             <div className="space-y-3">
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                面接で使用する履歴書
+                保健指導で使用するシナリオ
               </label>
               <select
                 value={tempSelectedResume || ''}
@@ -252,16 +252,16 @@ export default function SettingsModal({
                   text-[16px]
                 "
               >
-                <option value="">履歴書を選択してください</option>
-                {availableResumes.map((resume) => (
-                  <option key={resume.id} value={resume.id}>
-                    {resume.name}
+                <option value="">シナリオを選択してください</option>
+                {availableScenarios.map((scenario) => (
+                  <option key={scenario.id} value={scenario.id}>
+                    {scenario.name}
                   </option>
                 ))}
               </select>
               {tempSelectedResume && (
                 <p className="text-xs text-gray-500 dark:text-gray-400 leading-relaxed">
-                  選択中: {availableResumes.find(r => r.id === tempSelectedResume)?.description}
+                  選択中: {availableScenarios.find(r => r.id === tempSelectedResume)?.description}
                 </p>
               )}
             </div>

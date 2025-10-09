@@ -7,35 +7,145 @@ import { Message, ChatSession, ChatState, AppSettings } from '@/types'
 import { sessionsStorage, activeSessionStorage, generateId } from '@/lib/storage'
 import { generateTitleFromMessage } from '@/lib/utils'
 import { showNotification } from '@/lib/utils'
-import { getResumeInfo } from '@/resumes'
+import { getScenarioInfo, type ScenarioId } from '@/scenarios'
 
-export function useChat(settings: AppSettings) {
+// 面談終了を示すキーワードパターン
+const SESSION_END_PATTERNS = [
+  /面談.*終了/,
+  /今日.*これで.*終/,
+  /終わり.*しましょう/,
+  /ありがとうございました.*失礼/,
+  /お疲れ.*さま.*でした/
+]
+
+interface UseChatProps {
+  settings: AppSettings
+  updateSettings: (updates: Partial<AppSettings>) => void
+  skipInitialSession?: boolean
+}
+
+export function useChat({ settings, updateSettings, skipInitialSession = false }: UseChatProps) {
   const [messages, setMessages] = useState<Message[]>([])
   const [currentSessionId, setCurrentSessionId] = useState<string | null>(null)
   const [state, setState] = useState<ChatState>('idle')
   const [error, setError] = useState<string | null>(null)
+  const [sessionEnded, setSessionEnded] = useState(false)
 
   // Initialize or load session
   useEffect(() => {
     const activeSessionId = activeSessionStorage.get()
-    if (activeSessionId) {
-      loadSession(activeSessionId)
-    } else {
-      createNewSession()
+
+    if (skipInitialSession && !activeSessionId) {
+      // Skip initial session creation if skipInitialSession is true AND there's no active session
+      return
     }
+
+    if (activeSessionId) {
+      const sessions = sessionsStorage.getAll()
+      const session = sessions.find(s => s.id === activeSessionId)
+
+      if (session) {
+        setCurrentSessionId(activeSessionId)
+        setMessages(session.messages)
+        activeSessionStorage.set(activeSessionId)
+
+        // Restore the scenario selection if available
+        if (session.scenarioId && session.scenarioId !== settings.selectedResume) {
+          updateSettings({ selectedResume: session.scenarioId })
+        }
+      } else {
+        // Create initial session
+        const sessionId = generateId()
+        let initialContent = '現在、保健指導のシナリオが選択されていません。\n\n設定画面（⚙️）からシナリオを選択してください。シナリオを選択すると、その対象者との模擬保健指導面談が始まります。'
+        let sessionTitle = '新しいチャット'
+
+        if (settings.selectedResume) {
+          const scenarioInfo = getScenarioInfo(settings.selectedResume as ScenarioId)
+          if (scenarioInfo) {
+            initialContent = `こんにちは。\n\n今日は保健指導ということで呼ばれましたが…何の話でしょうか？`
+            sessionTitle = scenarioInfo.name
+          }
+        }
+
+        const initialMessage: Message = {
+          id: generateId(),
+          role: 'assistant',
+          content: initialContent,
+          timestamp: new Date()
+        }
+
+        setSessionEnded(false)
+
+        const session: ChatSession = {
+          id: sessionId,
+          title: sessionTitle,
+          messages: [initialMessage],
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          scenarioId: settings.selectedResume || undefined
+        }
+
+        sessionsStorage.add(session)
+        activeSessionStorage.set(sessionId)
+        setCurrentSessionId(sessionId)
+        setMessages([initialMessage])
+        setError(null)
+      }
+    } else {
+      // Create initial session
+      const sessionId = generateId()
+      let initialContent = '現在、保健指導のシナリオが選択されていません。\n\n設定画面（⚙️）からシナリオを選択してください。シナリオを選択すると、その対象者との模擬保健指導面談が始まります。'
+      let sessionTitle = '新しいチャット'
+
+      if (settings.selectedResume) {
+        const scenarioInfo = getScenarioInfo(settings.selectedResume as ScenarioId)
+        if (scenarioInfo) {
+          initialContent = `こんにちは。\n\n今日は保健指導ということで呼ばれましたが…何の話でしょうか？`
+          sessionTitle = scenarioInfo.name
+        }
+      }
+
+      const initialMessage: Message = {
+        id: generateId(),
+        role: 'assistant',
+        content: initialContent,
+        timestamp: new Date()
+      }
+
+      setSessionEnded(false)
+
+      const session: ChatSession = {
+        id: sessionId,
+        title: sessionTitle,
+        messages: [initialMessage],
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        scenarioId: settings.selectedResume || undefined
+      }
+
+      sessionsStorage.add(session)
+      activeSessionStorage.set(sessionId)
+      setCurrentSessionId(sessionId)
+      setMessages([initialMessage])
+      setError(null)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   // Create new session with initial system message
   const createNewSession = useCallback(() => {
     const sessionId = generateId()
 
-    // Generate initial message based on resume selection
-    let initialContent = '現在、面接用の履歴書が選択されていません。\n\n設定画面（⚙️）から履歴書を選択してください。履歴書を選択すると、その情報に基づいた模擬面接が始まります。'
+    // Generate initial message and title based on scenario selection
+    let initialContent = '現在、保健指導のシナリオが選択されていません。\n\n設定画面（⚙️）からシナリオを選択してください。シナリオを選択すると、その対象者との模擬保健指導面談が始まります。'
+    let sessionTitle = '新しいチャット'
 
     if (settings.selectedResume) {
-      const resumeInfo = getResumeInfo(settings.selectedResume as any)
-      if (resumeInfo) {
-        initialContent = `こんにちは。${resumeInfo.name}です。\n\n本日はお忙しい中、面接のお時間をいただきありがとうございます。どうぞよろしくお願いいたします。`
+      // selectedResumeはシナリオIDとして使用
+      const scenarioInfo = getScenarioInfo(settings.selectedResume as ScenarioId)
+      if (scenarioInfo) {
+        initialContent = `こんにちは。\n\n今日は保健指導ということで呼ばれましたが…何の話でしょうか？`
+        sessionTitle = scenarioInfo.name
       }
     }
 
@@ -46,15 +156,18 @@ export function useChat(settings: AppSettings) {
       content: initialContent,
       timestamp: new Date()
     }
-    
+
+    setSessionEnded(false)
+
     const session: ChatSession = {
       id: sessionId,
-      title: '新しいチャット',
+      title: sessionTitle,
       messages: [initialMessage],
       createdAt: new Date(),
-      updatedAt: new Date()
+      updatedAt: new Date(),
+      scenarioId: settings.selectedResume || undefined
     }
-    
+
     sessionsStorage.add(session)
     activeSessionStorage.set(sessionId)
     setCurrentSessionId(sessionId)
@@ -66,15 +179,55 @@ export function useChat(settings: AppSettings) {
   const loadSession = useCallback((sessionId: string) => {
     const sessions = sessionsStorage.getAll()
     const session = sessions.find(s => s.id === sessionId)
-    
+
     if (session) {
       setCurrentSessionId(sessionId)
       setMessages(session.messages)
       activeSessionStorage.set(sessionId)
+
+      // Restore the scenario selection if available
+      if (session.scenarioId && session.scenarioId !== settings.selectedResume) {
+        updateSettings({ selectedResume: session.scenarioId })
+      }
     } else {
-      createNewSession()
+      // Session not found, create a new one
+      const newSessionId = generateId()
+      let initialContent = '現在、保健指導のシナリオが選択されていません。\n\n設定画面（⚙️）からシナリオを選択してください。シナリオを選択すると、その対象者との模擬保健指導面談が始まります。'
+      let sessionTitle = '新しいチャット'
+
+      if (settings.selectedResume) {
+        const scenarioInfo = getScenarioInfo(settings.selectedResume as ScenarioId)
+        if (scenarioInfo) {
+          initialContent = `こんにちは。\n\n今日は保健指導ということで呼ばれましたが…何の話でしょうか？`
+          sessionTitle = scenarioInfo.name
+        }
+      }
+
+      const initialMessage: Message = {
+        id: generateId(),
+        role: 'assistant',
+        content: initialContent,
+        timestamp: new Date()
+      }
+
+      setSessionEnded(false)
+
+      const newSession: ChatSession = {
+        id: newSessionId,
+        title: sessionTitle,
+        messages: [initialMessage],
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        scenarioId: settings.selectedResume || undefined
+      }
+
+      sessionsStorage.add(newSession)
+      activeSessionStorage.set(newSessionId)
+      setCurrentSessionId(newSessionId)
+      setMessages([initialMessage])
+      setError(null)
     }
-  }, [createNewSession])
+  }, [settings.selectedResume, updateSettings])
 
   // Save current session
   const saveCurrentSession = useCallback(() => {
@@ -82,13 +235,10 @@ export function useChat(settings: AppSettings) {
 
     const sessions = sessionsStorage.getAll()
     const sessionIndex = sessions.findIndex(s => s.id === currentSessionId)
-    
+
     if (sessionIndex >= 0) {
-      // Update existing session
-      const title = messages.length > 0 ? generateTitleFromMessage(messages[0].content) : '新しいチャット'
-      
+      // Update existing session (keep the original title)
       sessionsStorage.update(currentSessionId, {
-        title,
         messages,
         updatedAt: new Date()
       })
@@ -101,6 +251,11 @@ export function useChat(settings: AppSettings) {
       saveCurrentSession()
     }
   }, [messages, saveCurrentSession])
+
+  // Check if message indicates session end
+  const checkSessionEnd = (content: string): boolean => {
+    return SESSION_END_PATTERNS.some(pattern => pattern.test(content))
+  }
 
   // Send message to API
   const sendMessage = useCallback(async (content: string) => {
@@ -118,6 +273,9 @@ export function useChat(settings: AppSettings) {
       content: content.trim(),
       timestamp: new Date()
     }
+
+    // Check if this message indicates session end
+    const isEndingSession = checkSessionEnd(content.trim())
 
     // Create empty assistant message for streaming
     const assistantMessage: Message = {
@@ -146,7 +304,8 @@ export function useChat(settings: AppSettings) {
             messages: newMessages,
             config: settings.geminiConfig,
             selectedResume: settings.selectedResume,
-            streamingSpeed: settings.streamingSpeed
+            streamingSpeed: settings.streamingSpeed,
+            isEndingSession
           })
         })
 
@@ -164,7 +323,6 @@ export function useChat(settings: AppSettings) {
         const decoder = new TextDecoder()
         let buffer = ''
         let displayedContent = ''
-        let pendingContent = ''
 
         // 速度設定に応じた遅延時間
         const getCharDelay = (speed: string) => {
@@ -231,6 +389,12 @@ export function useChat(settings: AppSettings) {
           reader.releaseLock()
         }
 
+        // If session ended, request feedback
+        if (isEndingSession) {
+          setSessionEnded(true)
+          await requestFeedback(newMessages, userMessage, assistantMessage)
+        }
+
       } else {
         // Non-streaming request with simulated streaming effect
         const response = await fetch('/api/chat', {
@@ -242,7 +406,8 @@ export function useChat(settings: AppSettings) {
             messages: newMessages,
             config: settings.geminiConfig,
             selectedResume: settings.selectedResume,
-            streamingSpeed: settings.streamingSpeed
+            streamingSpeed: settings.streamingSpeed,
+            isEndingSession
           })
         })
 
@@ -275,6 +440,12 @@ export function useChat(settings: AppSettings) {
         }
 
         setState('idle')
+
+        // If session ended, request feedback
+        if (isEndingSession) {
+          setSessionEnded(true)
+          await requestFeedback(newMessages, userMessage, assistantMessage)
+        }
       }
     } catch (err) {
       console.error('Chat error:', err)
@@ -284,6 +455,55 @@ export function useChat(settings: AppSettings) {
       showNotification(errorMessage, 'error')
     }
   }, [messages, state, settings.geminiConfig, settings.selectedResume])
+
+  // Request feedback on the session
+  const requestFeedback = async (conversationMessages: Message[], userMessage: Message, assistantMessage: Message) => {
+    try {
+      setState('loading')
+
+      // Add feedback request message with loading indicator
+      const feedbackMessage: Message = {
+        id: generateId(),
+        role: 'assistant',
+        content: '面談は終了しました。\n\n現在フィードバックを作成中です...',
+        timestamp: new Date()
+      }
+
+      setMessages(prev => [...prev, feedbackMessage])
+
+      const response = await fetch('/api/feedback', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          messages: conversationMessages,
+          config: settings.geminiConfig,
+          selectedResume: settings.selectedResume
+        })
+      })
+
+      if (!response.ok) {
+        throw new Error('フィードバックの生成に失敗しました')
+      }
+
+      const data = await response.json()
+
+      // Update feedback message with content
+      setMessages(prev => prev.map(msg =>
+        msg.id === feedbackMessage.id
+          ? { ...msg, content: `## 📊 面談フィードバック\n\n${data.feedback}` }
+          : msg
+      ))
+
+      setState('idle')
+      showNotification('フィードバックを生成しました', 'success')
+    } catch (err) {
+      console.error('Feedback error:', err)
+      showNotification('フィードバックの生成に失敗しました', 'error')
+      setState('idle')
+    }
+  }
 
   // Clear messages
   const clearMessages = useCallback(() => {
@@ -298,14 +518,55 @@ export function useChat(settings: AppSettings) {
     return sessionsStorage.getAll().sort((a, b) => b.updatedAt.getTime() - a.updatedAt.getTime())
   }, [])
 
+  // Refresh sessions (force re-read from storage)
+  const refreshSessions = useCallback(() => {
+    // This is a no-op function that just triggers re-render when needed
+    // The actual refresh happens in getAllSessions() which reads from storage
+  }, [])
+
   // Delete session
   const deleteSession = useCallback((sessionId: string) => {
     sessionsStorage.delete(sessionId)
-    
+
     if (currentSessionId === sessionId) {
-      createNewSession()
+      // Session being deleted is the current one, create a new session
+      const newSessionId = generateId()
+      let initialContent = '現在、保健指導のシナリオが選択されていません。\n\n設定画面（⚙️）からシナリオを選択してください。シナリオを選択すると、その対象者との模擬保健指導面談が始まります。'
+      let sessionTitle = '新しいチャット'
+
+      if (settings.selectedResume) {
+        const scenarioInfo = getScenarioInfo(settings.selectedResume as ScenarioId)
+        if (scenarioInfo) {
+          initialContent = `こんにちは。\n\n今日は保健指導ということで呼ばれましたが…何の話でしょうか？`
+          sessionTitle = scenarioInfo.name
+        }
+      }
+
+      const initialMessage: Message = {
+        id: generateId(),
+        role: 'assistant',
+        content: initialContent,
+        timestamp: new Date()
+      }
+
+      setSessionEnded(false)
+
+      const session: ChatSession = {
+        id: newSessionId,
+        title: sessionTitle,
+        messages: [initialMessage],
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        scenarioId: settings.selectedResume || undefined
+      }
+
+      sessionsStorage.add(session)
+      activeSessionStorage.set(newSessionId)
+      setCurrentSessionId(newSessionId)
+      setMessages([initialMessage])
+      setError(null)
     }
-  }, [currentSessionId, createNewSession])
+  }, [currentSessionId, settings.selectedResume])
 
   return {
     messages,
@@ -318,6 +579,7 @@ export function useChat(settings: AppSettings) {
     createNewSession,
     loadSession,
     getAllSessions,
-    deleteSession
+    deleteSession,
+    refreshSessions
   }
 }

@@ -153,3 +153,148 @@ export const truncateText = (text: string, maxLength: number = 50): string => {
   if (text.length <= maxLength) return text
   return text.slice(0, maxLength) + '...'
 }
+
+// Export/Import functionality
+export interface ExportData {
+  version: string
+  exportDate: string
+  sessions: ChatSession[]
+  settings?: AppSettings
+}
+
+export const exportStorage = {
+  // Export all chat sessions to JSON file
+  exportSessions(): void {
+    try {
+      const sessions = sessionsStorage.getAll()
+      const settings = settingsStorage.get()
+
+      const exportData: ExportData = {
+        version: '1.0',
+        exportDate: new Date().toISOString(),
+        sessions,
+        settings: {
+          ...settings,
+          geminiConfig: {
+            ...settings.geminiConfig,
+            apiKey: '' // Don't export API key for security
+          }
+        }
+      }
+
+      const blob = new Blob([JSON.stringify(exportData, null, 2)], {
+        type: 'application/json'
+      })
+
+      const url = URL.createObjectURL(blob)
+      const link = document.createElement('a')
+      link.href = url
+      link.download = `health-guidance-sessions-${new Date().toISOString().split('T')[0]}.json`
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+      URL.revokeObjectURL(url)
+    } catch (error) {
+      console.error('Export error:', error)
+      throw new Error('エクスポートに失敗しました')
+    }
+  },
+
+  // Import chat sessions from JSON file
+  async importSessions(file: File): Promise<{
+    success: boolean
+    message: string
+    importedCount?: number
+  }> {
+    try {
+      const text = await file.text()
+      const importData: ExportData = JSON.parse(text)
+
+      // Validate data structure
+      if (!importData.version || !importData.sessions || !Array.isArray(importData.sessions)) {
+        throw new Error('無効なファイル形式です')
+      }
+
+      // Validate and convert sessions
+      const validSessions: ChatSession[] = importData.sessions
+        .filter(session => {
+          return session.id &&
+                 session.title &&
+                 session.messages &&
+                 Array.isArray(session.messages) &&
+                 session.createdAt &&
+                 session.updatedAt
+        })
+        .map(session => ({
+          ...session,
+          createdAt: new Date(session.createdAt),
+          updatedAt: new Date(session.updatedAt),
+          messages: session.messages.map(msg => ({
+            ...msg,
+            timestamp: new Date(msg.timestamp)
+          }))
+        }))
+
+      if (validSessions.length === 0) {
+        throw new Error('有効なセッションが見つかりませんでした')
+      }
+
+      // Get existing sessions
+      const existingSessions = sessionsStorage.getAll()
+      const existingIds = new Set(existingSessions.map(s => s.id))
+
+      // Filter out duplicate sessions (by ID)
+      const newSessions = validSessions.filter(s => !existingIds.has(s.id))
+
+      // Merge and save
+      const allSessions = [...existingSessions, ...newSessions]
+      sessionsStorage.save(allSessions)
+
+      return {
+        success: true,
+        message: `${newSessions.length}件のセッションをインポートしました`,
+        importedCount: newSessions.length
+      }
+    } catch (error) {
+      console.error('Import error:', error)
+      return {
+        success: false,
+        message: error instanceof Error ? error.message : 'インポートに失敗しました'
+      }
+    }
+  },
+
+  // Export single session
+  exportSession(sessionId: string): void {
+    try {
+      const sessions = sessionsStorage.getAll()
+      const session = sessions.find(s => s.id === sessionId)
+
+      if (!session) {
+        throw new Error('セッションが見つかりません')
+      }
+
+      const exportData: ExportData = {
+        version: '1.0',
+        exportDate: new Date().toISOString(),
+        sessions: [session]
+      }
+
+      const blob = new Blob([JSON.stringify(exportData, null, 2)], {
+        type: 'application/json'
+      })
+
+      const url = URL.createObjectURL(blob)
+      const link = document.createElement('a')
+      link.href = url
+      link.download = `session-${session.title.replace(/[/\\?%*:|"<>]/g, '-')}-${new Date().toISOString().split('T')[0]}.json`
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+      URL.revokeObjectURL(url)
+    } catch (error) {
+      console.error('Export session error:', error)
+      throw new Error('セッションのエクスポートに失敗しました')
+    }
+  }
+}

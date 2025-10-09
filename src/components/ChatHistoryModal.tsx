@@ -2,9 +2,9 @@
 
 'use client'
 
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { ChatSession } from '@/types'
-import { formatDate } from '@/lib/storage'
+import { formatDate, exportStorage } from '@/lib/storage'
 import { showNotification } from '@/lib/utils'
 
 interface ChatHistoryModalProps {
@@ -14,6 +14,7 @@ interface ChatHistoryModalProps {
   onLoadSession: (sessionId: string) => void
   onDeleteSession: (sessionId: string) => void
   onBackToHome?: () => void
+  onImportComplete?: () => void
 }
 
 export default function ChatHistoryModal({
@@ -22,9 +23,11 @@ export default function ChatHistoryModal({
   sessions,
   onLoadSession,
   onDeleteSession,
-  onBackToHome
+  onBackToHome,
+  onImportComplete
 }: ChatHistoryModalProps) {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState<string | null>(null)
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
   if (!isOpen) return null
 
@@ -53,6 +56,51 @@ export default function ChatHistoryModal({
     return { user: userCount, total: session.messages.length }
   }
 
+  const handleExportAll = () => {
+    try {
+      exportStorage.exportSessions()
+      showNotification('履歴をエクスポートしました', 'success')
+    } catch (error) {
+      showNotification(error instanceof Error ? error.message : 'エクスポートに失敗しました', 'error')
+    }
+  }
+
+  const handleImportClick = () => {
+    fileInputRef.current?.click()
+  }
+
+  const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0]
+    if (!file) return
+
+    try {
+      const result = await exportStorage.importSessions(file)
+
+      if (result.success) {
+        showNotification(result.message, 'success')
+        onImportComplete?.()
+      } else {
+        showNotification(result.message, 'error')
+      }
+    } catch (error) {
+      showNotification('ファイルの読み込みに失敗しました', 'error')
+    }
+
+    // Reset file input
+    if (fileInputRef.current) {
+      fileInputRef.current.value = ''
+    }
+  }
+
+  const handleExportSession = (sessionId: string) => {
+    try {
+      exportStorage.exportSession(sessionId)
+      showNotification('セッションをエクスポートしました', 'success')
+    } catch (error) {
+      showNotification(error instanceof Error ? error.message : 'エクスポートに失敗しました', 'error')
+    }
+  }
+
   return (
     <div
       style={{
@@ -69,6 +117,15 @@ export default function ChatHistoryModal({
         flexDirection: 'column'
       }}
     >
+      {/* Hidden file input */}
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept=".json"
+        onChange={handleFileChange}
+        style={{ display: 'none' }}
+      />
+
       {/* Header */}
       <header
         style={{
@@ -128,6 +185,49 @@ export default function ChatHistoryModal({
         </button>
       </header>
 
+      {/* Export/Import Toolbar */}
+      {sessions.length > 0 && (
+        <div style={{
+          padding: '12px 16px',
+          backgroundColor: '#f9fafb',
+          borderBottom: '1px solid #e5e7eb',
+          display: 'flex',
+          gap: '8px',
+          justifyContent: 'center'
+        }}>
+          <button
+            onClick={handleExportAll}
+            className="
+              flex items-center gap-2 px-4 py-2 rounded-lg
+              bg-green-500 hover:bg-green-600
+              text-white text-sm font-medium
+              transition-colors shadow-sm
+            "
+            title="全ての履歴をエクスポート"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+            </svg>
+            <span>エクスポート</span>
+          </button>
+          <button
+            onClick={handleImportClick}
+            className="
+              flex items-center gap-2 px-4 py-2 rounded-lg
+              bg-purple-500 hover:bg-purple-600
+              text-white text-sm font-medium
+              transition-colors shadow-sm
+            "
+            title="履歴をインポート"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+            </svg>
+            <span>インポート</span>
+          </button>
+        </div>
+      )}
+
       {/* Content */}
       <div className="
         flex-1 overflow-y-auto p-4
@@ -178,38 +278,55 @@ export default function ChatHistoryModal({
                         {formatDate(session.updatedAt)}
                       </p>
                     </div>
-                    <div className="flex items-center gap-2 ml-2">
-                      <button
-                        onClick={() => handleLoadSession(session.id)}
-                        className="
-                          flex items-center gap-1 px-3 py-2 rounded-lg
-                          bg-blue-500 hover:bg-blue-600
-                          text-white text-xs font-medium
-                          transition-colors shadow-sm
-                        "
-                        title="会話を再開"
-                      >
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M14.828 14.828a4 4 0 01-5.656 0M9 10h1m4 0h1m-7-7h8a2 2 0 012 2v8M5 3a2 2 0 00-2 2v8a2 2 0 002 2h8a2 2 0 002-2V5a2 2 0 00-2-2H5z" />
-                        </svg>
-                        <span>再開</span>
-                      </button>
-                      <button
-                        onClick={() => setShowDeleteConfirm(session.id)}
-                        className="
-                          flex items-center gap-1 px-3 py-2 rounded-lg
-                          bg-red-500 hover:bg-red-600
-                          text-white text-xs font-medium
-                          transition-colors shadow-sm
-                        "
-                        title="会話を削除"
-                      >
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                        </svg>
-                        <span>削除</span>
-                      </button>
-                    </div>
+                  </div>
+
+                  {/* Action Buttons */}
+                  <div className="flex items-center gap-2 mb-2 flex-wrap">
+                    <button
+                      onClick={() => handleLoadSession(session.id)}
+                      className="
+                        flex items-center gap-1 px-3 py-2 rounded-lg
+                        bg-blue-500 hover:bg-blue-600
+                        text-white text-xs font-medium
+                        transition-colors shadow-sm
+                      "
+                      title="会話を再開"
+                    >
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M14.828 14.828a4 4 0 01-5.656 0M9 10h1m4 0h1m-7-7h8a2 2 0 012 2v8M5 3a2 2 0 00-2 2v8a2 2 0 002 2h8a2 2 0 002-2V5a2 2 0 00-2-2H5z" />
+                      </svg>
+                      <span>再開</span>
+                    </button>
+                    <button
+                      onClick={() => handleExportSession(session.id)}
+                      className="
+                        flex items-center gap-1 px-3 py-2 rounded-lg
+                        bg-green-500 hover:bg-green-600
+                        text-white text-xs font-medium
+                        transition-colors shadow-sm
+                      "
+                      title="このセッションをエクスポート"
+                    >
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                      </svg>
+                      <span>保存</span>
+                    </button>
+                    <button
+                      onClick={() => setShowDeleteConfirm(session.id)}
+                      className="
+                        flex items-center gap-1 px-3 py-2 rounded-lg
+                        bg-red-500 hover:bg-red-600
+                        text-white text-xs font-medium
+                        transition-colors shadow-sm
+                      "
+                      title="会話を削除"
+                    >
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                      </svg>
+                      <span>削除</span>
+                    </button>
                   </div>
 
                   {/* Preview */}

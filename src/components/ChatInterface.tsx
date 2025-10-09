@@ -1,10 +1,10 @@
-// 📱 Personal AI Assistant - Chat Interface Component
+// 📱 Health Guidance Simulation - Chat Interface Component
 
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
 import { useChat } from '@/hooks/useChat'
-import { AppSettings, Resume } from '@/types'
+import { AppSettings, HealthGuidanceScenario } from '@/types'
 import MessageBubble from './MessageBubble'
 import InputArea from './InputArea'
 import SettingsModal from './SettingsModal'
@@ -18,7 +18,7 @@ interface ChatInterfaceProps {
   isValidApiKey: boolean
   isLoaded: boolean
   onBackToHome: () => void
-  currentResume: Resume | null
+  currentResume: HealthGuidanceScenario | null
   forceNewSession: boolean
   onNewSessionCreated: () => void
 }
@@ -33,11 +33,23 @@ export default function ChatInterface({
   forceNewSession,
   onNewSessionCreated
 }: ChatInterfaceProps) {
-  const chat = useChat(settings)
+  const chat = useChat({ settings, updateSettings })
   const [isSettingsOpen, setIsSettingsOpen] = useState(false)
   const [isHistoryOpen, setIsHistoryOpen] = useState(false)
   const [isResumeOpen, setIsResumeOpen] = useState(false)
   const messagesEndRef = useRef<HTMLDivElement>(null)
+
+  // Determine avatar image based on gender
+  const getAvatarImage = (): string => {
+    if (currentResume) {
+      return currentResume.personalInfo.gender === '女性'
+        ? '/himan_pocchari08_obasan.png'
+        : '/himan_pocchari07_ojisan.png'
+    }
+    return '/himan_pocchari07_ojisan.png' // Default male avatar
+  }
+
+  const avatarImage = getAvatarImage()
 
   // Auto-scroll to bottom when new messages arrive
   useEffect(() => {
@@ -51,13 +63,13 @@ export default function ChatInterface({
     }
   }, [settings.darkMode, isLoaded])
 
-  // Force new session creation when needed
+  // Handle forceNewSession flag
   useEffect(() => {
     if (forceNewSession && isLoaded) {
-      chat.createNewSession()
+      // Reset the flag after mounting
       onNewSessionCreated()
     }
-  }, [forceNewSession, isLoaded, chat, onNewSessionCreated])
+  }, [forceNewSession, isLoaded, onNewSessionCreated])
 
   // Open settings if no API key
   useEffect(() => {
@@ -107,6 +119,10 @@ export default function ChatInterface({
           onLoadSession={chat.loadSession}
           onDeleteSession={chat.deleteSession}
           onBackToHome={onBackToHome}
+          onImportComplete={() => {
+            // Force refresh sessions list
+            chat.refreshSessions()
+          }}
         />
       )}
 
@@ -131,29 +147,38 @@ export default function ChatInterface({
             shadow-lg shadow-gray-100/50 dark:shadow-gray-900/50
           ">
             {/* Left side - Back to Home Button */}
-            <div className="flex items-center">
+            <div style={{ display: 'flex', alignItems: 'center' }}>
               <button
                 onClick={onBackToHome}
-                className="
-                  flex flex-col items-center gap-1 px-3 py-2 rounded-xl
-                  hover:bg-gray-100 dark:hover:bg-gray-700/50
-                  active:scale-95
-                  transition-all duration-150
-                  text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200
-                "
-                title="履歴書選択に戻る"
+                style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  gap: '0.25rem',
+                  padding: '0.5rem 0.75rem',
+                  borderRadius: '0.75rem',
+                  backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                  border: '1px solid rgba(229, 231, 235, 0.5)',
+                  boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.05)',
+                  color: '#6b7280',
+                  cursor: 'pointer',
+                  transition: 'all 0.15s',
+                  fontSize: '0.75rem',
+                  fontWeight: '500'
+                }}
+                title="シナリオ選択に戻る"
               >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                <svg style={{ width: '20px', height: '20px' }} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
                 </svg>
-                <span className="text-xs font-medium">戻る</span>
+                <span>戻る</span>
               </button>
             </div>
 
-            {/* Center - Interview Title */}
+            {/* Center - Health Guidance Title */}
             <div className="flex-1 text-center">
               <h1 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
-                🎯 模擬面接
+                🏥 保健指導シミュレーション
               </h1>
               {currentResume && (
                 <p className="text-xs text-gray-600 dark:text-gray-400">
@@ -163,80 +188,116 @@ export default function ChatInterface({
             </div>
 
             {/* Right side - Action Buttons */}
-            <div className="flex items-center gap-2">
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
               {/* Resume Button */}
               {currentResume && (
                 <button
                   onClick={() => setIsResumeOpen(true)}
-                  className="
-                    flex flex-col items-center gap-1 px-3 py-2 rounded-xl
-                    hover:bg-gray-100 dark:hover:bg-gray-700/50
-                    active:scale-95
-                    transition-all duration-150
-                    text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200
-                  "
-                  title="履歴書を表示"
+                  style={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    gap: '0.25rem',
+                    padding: '0.5rem 0.75rem',
+                    borderRadius: '0.75rem',
+                    backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                    border: '1px solid rgba(229, 231, 235, 0.5)',
+                    boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.05)',
+                    color: '#6b7280',
+                    cursor: 'pointer',
+                    transition: 'all 0.15s',
+                    fontSize: '0.75rem',
+                    fontWeight: '500'
+                  }}
+                  title="シナリオを表示"
                 >
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                  <svg style={{ width: '20px', height: '20px' }} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                   </svg>
-                  <span className="text-xs font-medium">履歴書</span>
+                  <span>シナリオ</span>
                 </button>
               )}
 
               {/* History Button */}
               <button
                 onClick={() => setIsHistoryOpen(true)}
-                className="
-                  flex flex-col items-center gap-1 px-3 py-2 rounded-xl
-                  hover:bg-gray-100 dark:hover:bg-gray-700/50
-                  active:scale-95
-                  transition-all duration-150
-                  text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200
-                "
+                style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  gap: '0.25rem',
+                  padding: '0.5rem 0.75rem',
+                  borderRadius: '0.75rem',
+                  backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                  border: '1px solid rgba(229, 231, 235, 0.5)',
+                  boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.05)',
+                  color: '#6b7280',
+                  cursor: 'pointer',
+                  transition: 'all 0.15s',
+                  fontSize: '0.75rem',
+                  fontWeight: '500'
+                }}
                 title="履歴"
               >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                <svg style={{ width: '20px', height: '20px' }} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0118 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25" />
                 </svg>
-                <span className="text-xs font-medium">履歴</span>
+                <span>履歴</span>
               </button>
 
           {/* New Chat Button */}
           <button
             onClick={chat.createNewSession}
-            className="
-              flex flex-col items-center gap-1 px-3 py-2 rounded-xl
-              hover:bg-gray-100 dark:hover:bg-gray-700/50
-              active:scale-95
-              transition-all duration-150
-              text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200
-            "
+            style={{
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              gap: '0.25rem',
+              padding: '0.5rem 0.75rem',
+              borderRadius: '0.75rem',
+              backgroundColor: 'rgba(255, 255, 255, 0.9)',
+              border: '1px solid rgba(229, 231, 235, 0.5)',
+              boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.05)',
+              color: '#6b7280',
+              cursor: 'pointer',
+              transition: 'all 0.15s',
+              fontSize: '0.75rem',
+              fontWeight: '500'
+            }}
             title="新しいチャット"
           >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+            <svg style={{ width: '20px', height: '20px' }} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
             </svg>
-            <span className="text-xs font-medium">新規</span>
+            <span>新規</span>
           </button>
 
           {/* Settings Button */}
           <button
             onClick={() => setIsSettingsOpen(true)}
-            className="
-              flex flex-col items-center gap-1 px-3 py-2 rounded-xl
-              hover:bg-gray-100 dark:hover:bg-gray-700/50
-              active:scale-95
-              transition-all duration-150
-              text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200
-            "
+            style={{
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              gap: '0.25rem',
+              padding: '0.5rem 0.75rem',
+              borderRadius: '0.75rem',
+              backgroundColor: 'rgba(255, 255, 255, 0.9)',
+              border: '1px solid rgba(229, 231, 235, 0.5)',
+              boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.05)',
+              color: '#6b7280',
+              cursor: 'pointer',
+              transition: 'all 0.15s',
+              fontSize: '0.75rem',
+              fontWeight: '500'
+            }}
             title="設定"
           >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+            <svg style={{ width: '20px', height: '20px' }} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M10.343 3.94c.09-.542.56-.94 1.11-.94h1.093c.55 0 1.02.398 1.11.94l.149.894c.07.424.384.764.78.93.398.164.855.142 1.205-.108l.737-.527a1.125 1.125 0 011.45.12l.773.774c.39.389.44 1.002.12 1.45l-.527.737c-.25.35-.272.806-.107 1.204.165.397.505.71.93.78l.893.15c.543.09.94.56.94 1.109v1.094c0 .55-.397 1.02-.94 1.11l-.893.149c-.425.07-.765.383-.93.78-.165.398-.143.854.107 1.204l.527.738c.32.447.269 1.06-.12 1.45l-.774.773a1.125 1.125 0 01-1.449.12l-.738-.527c-.35-.25-.806-.272-1.203-.107-.397.165-.71.505-.781.929l-.149.894c-.09.542-.56.94-1.11.94h-1.094c-.55 0-1.019-.398-1.11-.94l-.148-.894c-.071-.424-.384-.764-.781-.93-.398-.164-.854-.142-1.204.108l-.738.527c-.447.32-1.06.269-1.45-.12l-.773-.774a1.125 1.125 0 01-.12-1.45l.527-.737c.25-.35.273-.806.108-1.204-.165-.397-.505-.71-.93-.78l-.894-.15c-.542-.09-.94-.56-.94-1.109v-1.094c0-.55.398-1.02.94-1.11l.894-.149c.424-.07.765-.383.93-.78.165-.398.143-.854-.107-1.204l-.527-.738a1.125 1.125 0 01.12-1.45l.773-.773a1.125 1.125 0 011.45-.12l.737.527c.35.25.807.272 1.204.107.397-.165.71-.505.78-.929l.15-.894z" />
               <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
             </svg>
-            <span className="text-xs font-medium">設定</span>
+            <span>設定</span>
           </button>
         </div>
       </header>
@@ -303,6 +364,7 @@ export default function ChatInterface({
                 key={message.id}
                 message={message}
                 isLatest={index === chat.messages.length - 1}
+                avatarImage={avatarImage}
               />
             ))}
             
@@ -310,16 +372,16 @@ export default function ChatInterface({
             {chat.isLoading && (
               <div className="flex items-end gap-2 mb-3 px-4">
                 {/* AI Avatar */}
-                <div className="flex-shrink-0 w-24 h-24 mb-1">
-                  <div className="w-24 h-24 rounded-full bg-gradient-to-br from-emerald-400 to-cyan-500 flex items-center justify-center shadow-lg overflow-hidden">
-                    <img 
-                      src="/ai-avatar-rem.png" 
-                      alt="AI Avatar" 
-                      className="w-20 h-20 object-cover object-center rounded-full"
-                      style={{ 
-                        imageRendering: 'auto',
-                        maxWidth: '80px',
-                        maxHeight: '80px'
+                <div className="flex-shrink-0 mb-1" style={{ width: '60px', height: '60px' }}>
+                  <div className="rounded-full bg-gradient-to-br from-emerald-400 to-cyan-500 flex items-center justify-center shadow-lg overflow-hidden" style={{ width: '60px', height: '60px' }}>
+                    <img
+                      src={avatarImage}
+                      alt="AI Avatar"
+                      className="object-cover object-center"
+                      style={{
+                        width: '60px',
+                        height: '60px',
+                        imageRendering: 'auto'
                       }}
                     />
                   </div>

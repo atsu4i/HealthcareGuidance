@@ -1,13 +1,18 @@
-// 📱 AI Mock Interview - Resume Display Modal
+// 📱 Health Guidance Simulation - Scenario Display Modal
 
 'use client'
 
-import { Resume } from '@/types'
+import { Resume, HealthGuidanceScenario } from '@/types'
 
 interface ResumeModalProps {
   isOpen: boolean
   onClose: () => void
-  resume: Resume | null
+  resume: Resume | HealthGuidanceScenario | null
+}
+
+// Type guard to check if it's a HealthGuidanceScenario
+function isHealthGuidanceScenario(resume: Resume | HealthGuidanceScenario | null): resume is HealthGuidanceScenario {
+  return resume !== null && 'healthCheckResults' in resume
 }
 
 export default function ResumeModal({ isOpen, onClose, resume }: ResumeModalProps) {
@@ -59,8 +64,10 @@ export default function ResumeModal({ isOpen, onClose, resume }: ResumeModalProp
           text-white
         ">
           <div>
-            <h2 className="text-xl font-bold">{resume?.personalInfo.fullName || '履歴書'}</h2>
-            <p className="text-blue-100 text-sm">履歴書詳細</p>
+            <h2 className="text-xl font-bold">{resume?.personalInfo.fullName || 'シナリオ'}</h2>
+            <p className="text-blue-100 text-sm">
+              {resume && isHealthGuidanceScenario(resume) ? 'シナリオ詳細' : '履歴書詳細'}
+            </p>
           </div>
           <button
             onClick={onClose}
@@ -84,9 +91,183 @@ export default function ResumeModal({ isOpen, onClose, resume }: ResumeModalProp
         ">
           {!resume ? (
             <div className="text-center py-12">
-              <p className="text-gray-600 dark:text-gray-400">履歴書データがありません。</p>
+              <p className="text-gray-600 dark:text-gray-400">データがありません。</p>
             </div>
+          ) : isHealthGuidanceScenario(resume) ? (
+            /* Health Guidance Scenario Display */
+            <>
+              {/* Personal Info */}
+              <section>
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4 flex items-center gap-2">
+                  👤 基本情報
+                </h3>
+                <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4 space-y-2">
+                  <div><span className="font-medium">氏名:</span> {resume.personalInfo.fullName}</div>
+                  <div><span className="font-medium">年齢:</span> {resume.personalInfo.age}歳</div>
+                  <div><span className="font-medium">性別:</span> {resume.personalInfo.gender}</div>
+                  <div><span className="font-medium">職業:</span> {resume.personalInfo.occupation}</div>
+                  <div><span className="font-medium">家族構成:</span> {resume.personalInfo.familyStructure}</div>
+                </div>
+              </section>
+
+              {/* Health Check Results */}
+              <section>
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4 flex items-center gap-2">
+                  📊 健康診断結果
+                </h3>
+                <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4 space-y-2">
+                  <div className="font-medium text-blue-600 mb-2">身体測定</div>
+                  <div><span className="font-medium">身長:</span> {resume.healthCheckResults.height}cm</div>
+                  <div><span className="font-medium">体重:</span> {resume.healthCheckResults.weight}kg</div>
+                  <div><span className="font-medium">BMI:</span> {resume.healthCheckResults.bmi}</div>
+                  <div><span className="font-medium">腹囲:</span> {resume.healthCheckResults.waistCircumference}cm</div>
+                  <div><span className="font-medium">血圧:</span> {resume.healthCheckResults.bloodPressure.systolic}/{resume.healthCheckResults.bloodPressure.diastolic}mmHg</div>
+
+                  <div className="font-medium text-blue-600 mt-4 mb-2">血液検査</div>
+                  <div><span className="font-medium">空腹時血糖:</span> {resume.healthCheckResults.bloodTest.fastingBloodSugar}mg/dL</div>
+                  <div><span className="font-medium">HbA1c:</span> {resume.healthCheckResults.bloodTest.hba1c}%</div>
+                  <div><span className="font-medium">LDLコレステロール:</span> {resume.healthCheckResults.bloodTest.ldlCholesterol}mg/dL</div>
+                  <div><span className="font-medium">HDLコレステロール:</span> {resume.healthCheckResults.bloodTest.hdlCholesterol}mg/dL</div>
+                  <div><span className="font-medium">中性脂肪:</span> {resume.healthCheckResults.bloodTest.triglycerides}mg/dL</div>
+                  <div><span className="font-medium">肝機能:</span> AST {resume.healthCheckResults.bloodTest.ast}, ALT {resume.healthCheckResults.bloodTest.alt}, γ-GTP {resume.healthCheckResults.bloodTest.gammaGtp}</div>
+                </div>
+              </section>
+
+              {/* Lifestyle */}
+              <section>
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4 flex items-center gap-2">
+                  🍽️ 生活習慣
+                </h3>
+                {typeof resume.lifestyle.smoking === 'string' ? (
+                  /* New scenario format - string values */
+                  <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4 space-y-3">
+                    <div>
+                      <div className="font-medium text-gray-900 dark:text-gray-100 mb-1">喫煙</div>
+                      <div className="text-sm text-gray-600 dark:text-gray-400">
+                        {typeof resume.lifestyle.smoking === 'string' ? resume.lifestyle.smoking : String(resume.lifestyle.smoking)}
+                      </div>
+                    </div>
+                    <div>
+                      <div className="font-medium text-gray-900 dark:text-gray-100 mb-1">飲酒</div>
+                      <div className="text-sm text-gray-600 dark:text-gray-400">
+                        {typeof resume.lifestyle.alcohol === 'string' ? resume.lifestyle.alcohol : String(resume.lifestyle.alcohol)}
+                      </div>
+                    </div>
+                    <div>
+                      <div className="font-medium text-gray-900 dark:text-gray-100 mb-1">運動</div>
+                      <div className="text-sm text-gray-600 dark:text-gray-400">
+                        {typeof resume.lifestyle.exercise === 'string' ? resume.lifestyle.exercise : String(resume.lifestyle.exercise)}
+                      </div>
+                    </div>
+                    <div>
+                      <div className="font-medium text-gray-900 dark:text-gray-100 mb-1">食事</div>
+                      <div className="text-sm text-gray-600 dark:text-gray-400">
+                        {typeof resume.lifestyle.diet === 'string' ? resume.lifestyle.diet : String(resume.lifestyle.diet)}
+                      </div>
+                    </div>
+                    <div>
+                      <div className="font-medium text-gray-900 dark:text-gray-100 mb-1">睡眠</div>
+                      <div className="text-sm text-gray-600 dark:text-gray-400">
+                        {typeof resume.lifestyle.sleep === 'string' ? resume.lifestyle.sleep : String(resume.lifestyle.sleep)}
+                      </div>
+                    </div>
+                    <div>
+                      <div className="font-medium text-gray-900 dark:text-gray-100 mb-1">ストレス</div>
+                      <div className="text-sm text-gray-600 dark:text-gray-400">
+                        {typeof resume.lifestyle.stress === 'string' ? resume.lifestyle.stress : String(resume.lifestyle.stress)}
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  /* Old scenario format - object values */
+                  <div className="space-y-3">
+                    <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4">
+                      <div className="font-medium text-gray-900 dark:text-gray-100 mb-2">食生活</div>
+                      <div className="text-sm text-gray-600 dark:text-gray-400">
+                        パターン: {typeof resume.lifestyle.diet === 'object' ? resume.lifestyle.diet.pattern : ''}
+                      </div>
+                      <div className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                        問題点: {typeof resume.lifestyle.diet === 'object' ? resume.lifestyle.diet.problems.join('、') : ''}
+                      </div>
+                    </div>
+                    <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4">
+                      <div className="font-medium text-gray-900 dark:text-gray-100 mb-2">運動</div>
+                      <div className="text-sm text-gray-600 dark:text-gray-400">
+                        頻度: {typeof resume.lifestyle.exercise === 'object' ? resume.lifestyle.exercise.frequency : ''}
+                      </div>
+                      <div className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                        障壁: {typeof resume.lifestyle.exercise === 'object' ? resume.lifestyle.exercise.barriers.join('、') : ''}
+                      </div>
+                    </div>
+                    <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4">
+                      <div className="font-medium text-gray-900 dark:text-gray-100 mb-2">飲酒・喫煙</div>
+                      <div className="text-sm text-gray-600 dark:text-gray-400">
+                        飲酒: {typeof resume.lifestyle.alcohol === 'object' ? `${resume.lifestyle.alcohol.frequency} (${resume.lifestyle.alcohol.amount})` : ''}
+                      </div>
+                      <div className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                        喫煙: {typeof resume.lifestyle.smoking === 'object' ? resume.lifestyle.smoking.status : ''}
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </section>
+
+              {/* Psychological Profile */}
+              <section>
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4 flex items-center gap-2">
+                  🧠 心理プロフィール
+                </h3>
+                {'attitudeTowardGuidance' in resume.psychologicalProfile ? (
+                  /* New scenario format */
+                  <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4 space-y-3">
+                    <div>
+                      <div className="font-medium text-gray-900 dark:text-gray-100 mb-1">指導への態度</div>
+                      <div className="text-sm text-gray-600 dark:text-gray-400">{resume.psychologicalProfile.attitudeTowardGuidance}</div>
+                    </div>
+                    <div>
+                      <div className="font-medium text-gray-900 dark:text-gray-100 mb-1">動機づけレベル</div>
+                      <div className="text-sm text-gray-600 dark:text-gray-400">{resume.psychologicalProfile.motivationLevel}</div>
+                    </div>
+                    <div>
+                      <div className="font-medium text-gray-900 dark:text-gray-100 mb-1">健康意識</div>
+                      <div className="text-sm text-gray-600 dark:text-gray-400">{resume.psychologicalProfile.healthAwareness}</div>
+                    </div>
+                    <div>
+                      <div className="font-medium text-gray-900 dark:text-gray-100 mb-1">変化への準備</div>
+                      <div className="text-sm text-gray-600 dark:text-gray-400">{resume.psychologicalProfile.changeReadiness}</div>
+                    </div>
+                    <div>
+                      <div className="font-medium text-gray-900 dark:text-gray-100 mb-1">コミュニケーションスタイル</div>
+                      <div className="text-sm text-gray-600 dark:text-gray-400">{resume.psychologicalProfile.communicationStyle}</div>
+                    </div>
+                    <div>
+                      <div className="font-medium text-gray-900 dark:text-gray-100 mb-1">対処メカニズム</div>
+                      <div className="text-sm text-gray-600 dark:text-gray-400">{resume.psychologicalProfile.copingMechanism}</div>
+                    </div>
+                  </div>
+                ) : (
+                  /* Old scenario format */
+                  <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4 space-y-2">
+                    <div><span className="font-medium">性格:</span> {'personality' in resume.psychologicalProfile ? resume.psychologicalProfile.personality : ''}</div>
+                    <div><span className="font-medium">応答スタイル:</span> {'responseStyle' in resume.psychologicalProfile ? resume.psychologicalProfile.responseStyle : ''}</div>
+                    <div><span className="font-medium">動機づけレベル:</span> {resume.psychologicalProfile.motivationLevel}</div>
+                    <div><span className="font-medium">ヘルスリテラシー:</span> {'healthLiteracy' in resume.psychologicalProfile ? resume.psychologicalProfile.healthLiteracy : ''}</div>
+                  </div>
+                )}
+              </section>
+
+              {/* Background Story */}
+              <section>
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4 flex items-center gap-2">
+                  📖 背景ストーリー
+                </h3>
+                <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4">
+                  <p className="text-gray-700 dark:text-gray-300 leading-relaxed">{resume.backgroundStory}</p>
+                </div>
+              </section>
+            </>
           ) : (
+            /* Resume Display */
             <>
               {/* Personal Info */}
               <section>
