@@ -1,5 +1,5 @@
 {
-  "name": "ai-mock-interview",
+  "name": "healthcare-guidance",
   "version": "0.1.0",
   "private": true,
   "scripts": {
@@ -28,10 +28,29 @@
     "tailwindcss-animate": "^1.0.7",
     "typescript": "^5.8.3"
   },
-  "description": "AI-powered mock interview practice app built with Next.js and Gemini AI",
+  "description": "AI-powered health guidance simulation app for public health nurses using Next.js and Gemini AI",
   "main": "index.js",
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
+  "keywords": [
+    "health-guidance",
+    "public-health",
+    "nursing",
+    "gemini-ai",
+    "simulation",
+    "pwa",
+    "nextjs",
+    "typescript",
+    "metabolic-syndrome",
+    "roleplay"
+  ],
+  "author": "HealthcareGuidance Contributors",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/atsu4i/HealthcareGuidance.git"
+  },
+  "bugs": {
+    "url": "https://github.com/atsu4i/HealthcareGuidance/issues"
+  },
+  "homepage": "https://github.com/atsu4i/HealthcareGuidance#readme",
   "type": "commonjs"
 }
