@@ -1,0 +1,21 @@
+cff-version: 1.2.0
+message: "このソフトウェアを使用する場合は、以下のように引用してください。"
+title: "AI保健指導シミュレーター"
+abstract: "公衆衛生看護師向けのAI保健指導練習アプリケーション。Google Gemini AIを活用し、13種類の多様な患者シナリオに基づいたロールプレイング型の保健指導練習環境を提供します。"
+type: software
+authors:
+  - name: "HealthcareGuidance Contributors"
+repository-code: "https://github.com/atsu4i/HealthcareGuidance"
+url: "https://github.com/atsu4i/HealthcareGuidance"
+license: MIT
+keywords:
+  - health-guidance
+  - public-health
+  - nursing
+  - gemini-ai
+  - simulation
+  - pwa
+  - metabolic-syndrome
+  - roleplay
+version: 0.1.0
+date-released: 2025-01-09

@@ -253,6 +253,35 @@ Tailwind CSSクラスでカラーパレットやレイアウトを変更可能�
 - 設定画面でシナリオが正しく読み込まれているか確認
 - ブラウザコンソールでエラーを確認
 
+## 📖 引用
+
+このシミュレーターを研究や論文で使用された場合は、以下のように引用してください。
+
+### GitHub引用機能
+GitHubの「Cite this repository」ボタンから引用情報を取得できます（リポジトリページ右上の「About」セクション）。
+
+### BibTeX
+```bibtex
+@software{HealthcareGuidance2025,
+  title = {AI保健指導シミュレーター},
+  author = {{HealthcareGuidance Contributors}},
+  year = {2025},
+  url = {https://github.com/atsu4i/HealthcareGuidance},
+  version = {0.1.0},
+  note = {公衆衛生看護師向けAI保健指導練習アプリケーション}
+}
+```
+
+### APA形式
+```
+HealthcareGuidance Contributors. (2025). AI保健指導シミュレーター (Version 0.1.0) [Computer software]. https://github.com/atsu4i/HealthcareGuidance
+```
+
+### プレーンテキスト
+```
+AI保健指導シミュレーター, HealthcareGuidance Contributors, 2025, https://github.com/atsu4i/HealthcareGuidance
+```
+
 ## 📄 ライセンス
 
 MIT License
