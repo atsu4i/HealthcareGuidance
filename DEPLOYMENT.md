@@ -20,13 +20,13 @@
 2. Container Managerを起動
 
 #### ステップ2: プロジェクトファイルのアップロード
-1. File Stationでアプリフォルダを作成（例: `/docker/gemini-assistant/`）
+1. File Stationでアプリフォルダを作成（例: `/docker/healthcare-guidance/`）
 2. プロジェクトファイル一式をアップロード
 
 #### ステップ3: Docker Composeでデプロイ
 1. Container Manager > プロジェクト > 作成
-2. プロジェクト名: `gemini-assistant`
-3. パス: `/docker/gemini-assistant/`
+2. プロジェクト名: `healthcare-guidance`
+3. パス: `/docker/healthcare-guidance/`
 4. ソース: `docker-compose.yml`を選択
 5. ビルドして起動
 
@@ -39,19 +39,19 @@ ssh admin@[NAS_IP_ADDRESS]
 
 #### ステップ2: プロジェクトディレクトリ作成
 ```bash
-sudo mkdir -p /volume1/docker/gemini-assistant
-cd /volume1/docker/gemini-assistant
+sudo mkdir -p /volume1/docker/healthcare-guidance
+cd /volume1/docker/healthcare-guidance
 ```
 
 #### ステップ3: ファイル転送
 ローカルからファイルを転送（Windows PowerShell）:
 ```powershell
-scp -r C:\MyProject\gemini-personal-assistant\* admin@[NAS_IP]:\/volume1\/docker\/gemini-assistant\/
+scp -r C:\MyProject\HealthcareGuidance\* admin@[NAS_IP]:\/volume1\/docker\/healthcare-guidance\/
 ```
 
 #### ステップ4: Docker Composeでビルド・実行
 ```bash
-cd /volume1/docker/gemini-assistant
+cd /volume1/docker/healthcare-guidance
 sudo docker-compose up -d --build
 ```
 
@@ -125,8 +125,8 @@ ports:
 ### 設定とデータ
 ```bash
 # 設定バックアップ
-sudo docker-compose exec gemini-assistant npm run export-data
+sudo docker-compose exec healthcare-guidance npm run export-data
 
 # コンテナボリュームバックアップ
-sudo cp -r /volume1/docker/gemini-assistant /volume1/backups/
+sudo cp -r /volume1/docker/healthcare-guidance /volume1/backups/
 ```
