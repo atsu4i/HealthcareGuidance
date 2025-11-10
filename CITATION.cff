@@ -4,7 +4,8 @@ title: "AI保健指導シミュレーター"
 abstract: "公衆衛生看護師向けのAI保健指導練習アプリケーション。Google Gemini AIを活用し、13種類の多様な患者シナリオに基づいたロールプレイング型の保健指導練習環境を提供します。"
 type: software
 authors:
-  - name: "HealthcareGuidance Contributors"
+  - family-names: "Iwai"
+    given-names: "Atsushi"
 repository-code: "https://github.com/atsu4i/HealthcareGuidance"
 url: "https://github.com/atsu4i/HealthcareGuidance"
 license: MIT

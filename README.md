@@ -264,7 +264,7 @@ GitHubの「Cite this repository」ボタンから引用情報を取得できま
 ```bibtex
 @software{HealthcareGuidance2025,
   title = {AI保健指導シミュレーター},
-  author = {{HealthcareGuidance Contributors}},
+  author = {Iwai, Atsushi},
   year = {2025},
   url = {https://github.com/atsu4i/HealthcareGuidance},
   version = {0.1.0},
@@ -274,12 +274,12 @@ GitHubの「Cite this repository」ボタンから引用情報を取得できま
 
 ### APA形式
 ```
-HealthcareGuidance Contributors. (2025). AI保健指導シミュレーター (Version 0.1.0) [Computer software]. https://github.com/atsu4i/HealthcareGuidance
+Iwai, A. (2025). AI保健指導シミュレーター (Version 0.1.0) [Computer software]. https://github.com/atsu4i/HealthcareGuidance
 ```
 
 ### プレーンテキスト
 ```
-AI保健指導シミュレーター, HealthcareGuidance Contributors, 2025, https://github.com/atsu4i/HealthcareGuidance
+AI保健指導シミュレーター, Atsushi Iwai, 2025, https://github.com/atsu4i/HealthcareGuidance
 ```
 
 ## 📄 ライセンス
